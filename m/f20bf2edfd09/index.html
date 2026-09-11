@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light">
+<title>Port of Subs — Colorado site map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+  :root { --navy:#1b2a4a; --accent:#8a1f2d; --ink:#1d2430; --muted:#5c6675; --line:#dfe3ea; --bg:#f6f7f9; --panel:#ffffff;
+          --new:#2f6fd8; --go:#1f9d4a; --hold:#e0a100; --pass:#8a8f98; --loi:#7b3fd6; --lease:#e0631a; --executed:#0b6b3a; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  #top { position:fixed; top:0; left:0; right:0; z-index:1200; background:var(--navy); color:#fff; padding:8px 12px calc(8px); display:flex; align-items:center; gap:10px; padding-top:calc(8px + env(safe-area-inset-top)); }
+  #top h1 { font-size:15px; margin:0; font-weight:600; line-height:1.2; flex:1; min-width:0; }
+  #top .sub { font-size:11px; opacity:.8; font-weight:400; display:block; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #top button { background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.25); border-radius:8px; padding:7px 10px; font-size:13px; cursor:pointer; }
+  #top button.on { background:#fff; color:var(--navy); }
+  #map { position:fixed; top:0; bottom:0; left:0; right:0; }
+  body.desk #map { left:340px; }
+  #side { position:fixed; top:0; bottom:0; left:0; width:340px; background:var(--panel); border-right:1px solid var(--line); z-index:1100; overflow:auto; padding-top:72px; display:none; }
+  body.desk #side { display:block; }
+  #sheet { position:fixed; left:0; right:0; bottom:0; max-height:70vh; overflow:auto; background:var(--panel); border-top:1px solid var(--line); border-radius:14px 14px 0 0; box-shadow:0 -6px 24px rgba(0,0,0,.18); z-index:1150; display:none; padding-bottom:env(safe-area-inset-bottom); }
+  #sheet.open { display:block; }
+  body.desk #sheet { left:340px; }
+  .grab { width:40px; height:4px; background:#c9ced8; border-radius:2px; margin:8px auto 4px; }
+  .pane { padding:10px 14px 16px; }
+  .pane h2 { font-size:14px; margin:8px 0 6px; color:var(--navy); }
+  .pane h3 { font-size:12px; margin:12px 0 4px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .row { display:flex; align-items:center; gap:8px; padding:5px 0; font-size:14px; }
+  .row input { width:18px; height:18px; }
+  .row .n { margin-left:auto; color:var(--muted); font-size:12px; }
+  .sw { width:14px; height:14px; border-radius:50%; display:inline-block; border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.25); }
+  .sw.sq { border-radius:3px; }
+  .sw.dia { transform:rotate(45deg); border-radius:2px; }
+  .chip { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; color:#fff; font-weight:600; }
+  .sites-list .item { padding:8px 0; border-bottom:1px solid var(--line); cursor:pointer; }
+  .sites-list .item b { font-size:14px; display:block; }
+  .sites-list .item span { font-size:12px; color:var(--muted); }
+  .note { font-size:12px; color:var(--muted); line-height:1.4; }
+  .foot { font-size:11px; color:var(--muted); line-height:1.5; padding:8px 0 0; }
+  .leaflet-popup-content { margin:10px 12px; font-size:13px; line-height:1.4; min-width:220px; max-width:300px; }
+  .leaflet-popup-content h4 { margin:0 0 4px; font-size:15px; color:var(--navy); }
+  .leaflet-popup-content .kv { margin:2px 0; }
+  .leaflet-popup-content .kv b { color:var(--muted); font-weight:500; }
+  .leaflet-popup-content a { color:var(--accent); }
+  .pin { width:26px; height:26px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; }
+  .pin span { transform:rotate(45deg); color:#fff; font-size:11px; font-weight:700; }
+  .store { width:22px; height:22px; background:var(--navy); border:2px solid #fff; border-radius:4px; box-shadow:0 2px 6px rgba(0,0,0,.35); color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .dev { width:22px; height:22px; background:#c04b8f; border:2px solid #fff; transform:rotate(45deg); box-shadow:0 2px 6px rgba(0,0,0,.35); }
+  .dev.comp { background:#b91c1c; }
+  .day { width:22px; height:22px; border-radius:50%; background:#0e7490; border:2px solid #fff; color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.35); }
+  .terr-label { background:rgba(255,255,255,.85); border:1px solid rgba(0,0,0,.2); border-radius:6px; padding:2px 6px; font-size:11px; font-weight:600; color:#1d2430; white-space:nowrap; }
+  #lock { position:fixed; inset:0; z-index:2000; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; padding:20px; }
+  #lock .card { background:#fff; color:var(--ink); border-radius:14px; padding:22px; width:100%; max-width:380px; box-shadow:0 12px 40px rgba(0,0,0,.35); }
+  #lock h1 { font-size:18px; margin:0 0 4px; color:var(--navy); }
+  #lock p { font-size:13px; color:var(--muted); margin:0 0 14px; }
+  #lock input[type=password] { width:100%; font-size:17px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; }
+  #lock label { font-size:13px; display:flex; align-items:center; gap:8px; margin:12px 0; color:var(--muted); }
+  #lock button { width:100%; background:var(--accent); color:#fff; border:0; border-radius:8px; padding:12px; font-size:15px; font-weight:600; cursor:pointer; }
+  #lock .err { color:var(--accent); font-size:13px; min-height:18px; margin-top:8px; }
+  #printview { display:none; }
+  @media print {
+    #top, #sheet, #side, #lock, .leaflet-control-container { display:none !important; }
+    #map { position:relative !important; height:60vh !important; left:0 !important; page-break-after:always; }
+    #printview { display:block; padding:12px; font-size:11px; }
+    #printview table { border-collapse:collapse; width:100%; }
+    #printview th, #printview td { border:1px solid #bbb; padding:4px 6px; vertical-align:top; text-align:left; }
+    #printview h1 { font-size:16px; }
+  }
+</style>
+</head>
+<body>
+<div id="lock">
+  <div class="card">
+    <h1>Port of Subs — Colorado site map</h1>
+    <p>Prepared by Fox Front Range CRE. Enter the passphrase Andrew sent you.</p>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="Passphrase" inputmode="text" autocapitalize="off" autocorrect="off">
+    <label><input id="remember" type="checkbox" checked> Remember on this device</label>
+    <button id="go">Open the map</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="top">
+  <h1><span id="title">Port of Subs — Colorado site map</span><span class="sub" id="stamp">Updated 2026-09-11T14:07-06:00</span></h1>
+  <button id="btn-base" title="Switch between aerial and street map">Street</button>
+  <button id="btn-layers">Layers</button>
+  <button id="btn-list">Sites</button>
+</div>
+<div id="side"><div class="pane" id="sidepane"></div></div>
+<div id="map"></div>
+<div id="sheet"><div class="grab"></div><div class="pane" id="sheetpane"></div></div>
+<div id="printview"></div>
+
+<script id="sealed" type="application/json">{"v": 1, "kdf": "PBKDF2-SHA256", "iter": 600000, "salt": "RvLq1xRPUUr/PiJQgvbTfg==", "nonce": "8Ztw0LD31guQ3oby", "ct": "bWF+5CwZsyOU1Nx/WtVv01F9UCWatMULJ52UDyV5f9V/m7PthTzTIcXYl2YGb8Jno7yf0yDBEcOfqTWBrMcQBdNu1802Z5uQzlZjYmeePW4q3xOhM3xiuPeLiVyHmx8NUjqXpXMk1cdqV3nopUlVOdDd/K26gMRVEvkqpG122pUhgzrvt7WKAy8FlWzXV54nVXs6aohq4f6RJEqtyLsh2gKZB99qb/BylYsdP/5CRJGo9mCZ0Iqa171Xx659LJi7DH+3dRBkP0+gK2Jpw6PD8xQ0hzJBom+XIXMhgiWTujqEn+nz1KgjevSOfJHk6VIfPbdhKW9Wey4s7wYMncR2LX++vL5S31bGxuzORn6oHOF1dNkMOx0DmcXqeH5SNeAuJobHEuPcF1EN3PO3KgRmledq63RBIa8WX2BfXe+5EnOEcCMCQUX03/ubjCGkxDO253UAAYa0z89BE88gHyRvUQKkGr874AqcjLUeuIYBoOYC4hDpy5bZ/Mt51otL5UN3kyFPsGL6b/eqviUu/2hTWXk8jLAxyvXa352b1suyWxejAKuxTcjupGXTdkAzBjvkNHkqC4SN9VuB74UxMbA0fCGME0PjM/9d19MN/GVHKyC4DKFcebfukGeULZClZSwboqk8/FjKJcniUU4GMPjixNi8XMulSqkK/XJJ2xKQQ+qwPiWwpmIjdfTa/s6cfqicPOuMAxhigLC68D+Dypeb3Abdub7ZcvjvEO9SGd3OIS2u40PUvBxown+ITF/IVC2OLEct4q7YUpA1hbUzASUzl/Jx0TyAaNTNUUreSboGVqrOHuNmGqwqqOJK/7LJDBcbeP/SGdllg9osQtAZLuwYFIfACI0C1blnHAeyxcYPeJiXJZ7UcyA04vqYlM7YMu81Ox8KVPeIldTT5TJm8eTTla/LCAkimd2fSeUF58v9LO+zOXH4Ft2mqK5X+/C9JXvTUgpj/e546gT3lsrE9lKddI3NkLNo9pcDQFq9HClzAgY0Oxya1CRKSkczWcHZwxOEge8bTqxdrqQIqPOgG02vFPYVTS8ahxBBaHP3G0STJVZULecTum7WX71BEJksnChJWhnqMoDIDYenIESR08ywqITg7c1wVhoZFZtq5CVSnu0EJG4qXWcfcMnorPq9pDDwL+0vWO2ChL+EOZIS3IvBF+xLKQxlMDrCDn95q+Wq0ur4KWmbcv84gbiGTjN4AuE0tjP8N0ZbMyPtxmvLABAbco6XJx2nwzx4N+19gKewhPd79ZBqCCewVTlwYaq+55H4R7HzQtHHKqD8oXQE2d3Vo9kVJ2VjqeemxyNvBDd7o6rwEode+0lDrhgt7W7TmoUTYZXs/ywkHG4rQyDiFJXLxxCo+3TGvK96ZCwja+KQYcuC8Oz02qI3NVTy3vbEHGpeyb35b0+keo4My5uzOcl7kG+4EeDjRTV27zhTozGxAwEvRydKtDZlfoE+YqPoVFLOCu0HSD6JTrH0rrrs1gjmQsj++x1hzm/xvwAcgVQYQaTE7rXkaqeGN6AXJ3f2s+KGnHx+WpGQoYj5elscluEqq+2bvWDHTUIvBY1N/7Ytt86upQkQxLb/YldlAMVhuhiL9LRlWs15SmZVf7coGLDjSyR4VPaJCjRXIBn2QSF/We5uD9vMSsS+DKo0dFsSVyUW5c3bXIAz6HIC5CNi3bDffra7Okn7Z9Ru5E/z4XI7eIlr5PXpzqzKt5gLUxcaFiroWYwSVup94zFOHQRpLCRZtTHliCAap1STLtDu+PxHhi95J+8D/YT6nRqNTwdyhnus8TmEmtd5G6SO9xZ0u1i3vv9EiEYxD4OWebEh55v4+4bzQP87Ys5S9Ol9OiCxs5rNqA/jR6WmxASGj6C7j6YEMFS81zwMnUKn9NecZf96Kr1iPBMC3Vh4dqxqcrmi365xUEYk+q4Oz9sG+VkKdx3c7/hZdMe1mkuqI4OwPV7n9vUgv4ixCensm092hCT01gANyzbWaqJSVtA9fLyMdaEuFrykbOq8VGeobm/Y8QNyb4rNAOm2z03GpuZ3w/Ew6vFxYMPfGh+cdMPGx1U0G/fnyOFUgmo/zezbbEC2pyXN9lNUEjWNS7WREHl2WMO257lqV4Mcqug8iogwm5bnwh+n/QTJ0lKrtyPwrf222LQbtoSLfakHD7LWT7v1u77kLLb6aVtwmPHTjAOAAcQc9W8gzLuS3pvfGXQhRsH0w/+q5pwgYKxyFhASeWJz9F05f1YOxyfoS0jrTVaYTXHLMJ9O7dk0zeAHWHP1BC9XUXWa1hZsWVqWAa0y0RGtAQqumuRNcTUoianRhenZ0qati3rCwpMAoCcya3N+C2Xp8DLBoAN46ht//DHv5dQdEYU6TaPf4R1kzGGL1w/iwqcZTRufu6uIPB1sAXGI3v+B7U1wAk+kifNqK2a8aij+joCGoLaaYlQ+laRAmInJsEgqagHJiWVZsIprt+NwMrAdqVWj4sXB8lH1802zcSIBQWw+x650CIdbR4plRn7i0YjPmf2xrNdVc0aLMH7SXkS2s/GslAQf+U0FAbF5GELAPwbeRJF+RygxZSfVnrAjGm4fbP5VdBJeSERjdhhAEnLIEwDr1lFh5+IO8ONdDSsjsoqUpWO2K55rNw9VSIyKkQgxmaNJuZU2TPc8Wd8kS80ZpdnGS+uoqEl46w2SguUWYOO/fB9vHc8+cYopN9Bv0ngIyVPTtdKcZ/dqXulqX0uJggk5Fk9y41ayEgKrRR8GF1IWZc9H6GaGhjQsjPrW0gHbKipRhOJosa1febzxNUfUPr90uA9TxTwD82CyLaaNbC1cRAwtxKZO5lF3gMbM5n+uUgx8I/aYL4TW9MwnHkZ80VxIz3/b0MsSFP2lM8ilejxu/unOmrHavLta3TQwtbr3DYAp/iQU12tjMRUifaHdNk9ndC5puisCswgNgfoMnTMHrDa4M10GqaP4GY+cV0BqFqM/vYlzr6+tytYAd21NG269vtgQh1uMp1ZND8fDTtyOsgIHT6NAPZqSOZ6a5cHVQjIUaRO1T33j/AhV4wNNwUPGphHqzBI9lsxPozsj5uZt2rjlJzEtLs1+5Cp9g+IHOIhVFXgtFQyGiR1FFL1TvAj7qOzU1Je4rV7W2jT59VJphAqPJemC4C5ZzekPRPeN3FvNErZ+wx/CMwdXrOLd/+gS7S3B3ObNRIZwZQVKtVglbigAnGhhlizjQGspFHVQIcDjeiAnEXsOoaOZMUD8SH2wpSqCkqz3n0efwycaPYW3TYAjvRW8f48/7nzYZ3df8lIaqaomX0QSeDt0ABXmn4b4npZCZ4uglOovbn1cg/wP/qbKsRVplF1fsTKipSEXz7umEKGoeGTmXAofDK9LiIE3Mq4uZhgZF3yWaKKIaAiC4lIHVevFI4TL+pP7ya56kySEuw82zIkuj7ctXNcSee2oM7TA8fAb+tWqW4wkzDeyXL6rLa/lMG2+0rJiCk8qK67Ac9+F0qpAJhFwxTkkVrasH9/dJ1gg9qUVJB6dcqiscktWtibdXwHJMKjVGAhlDhmaRP+Ht7s5+6mQiG6XYFKA4vKBh9AEtp5wD19c65zO+CLagFe/X0r60MRUMmZlOgBcPksTfRREmO77+i1arC9bU24rVolcwbLning8N30NJmoo2i4t1vZ/S74KgkzXGSdgtj8uOo/jGqN6O3BNeFOh7w2SKIQsDrrTK4+4sfpm+lIX3477YUpJlSD9X1fp9unwGYNZ6YtPi/isJIB9arCE4mLPIzut4QcvL8LRtJXPHred+Ia0pMHN8oP/Q31WD+5MvC65G0BIKK8gJZ5T4i/30UhDcGiIwsDNNkRFoR6J9vDQpHT5K+WD4R2n/uZhapUy18+LriNmQiefJnePoEeOSaUDdzi9vFogCs8ONBk8qIhPOV2tUoPHEWlPZUaaxy/WtNss9iP9xqG4zxliMQuTzVyp9MQWaJvSEny0LIHvUSFTETlltLMz9C9CId8hI8KLhcnHZPZqnCgXT53jlNJh05TsWQL7augDYNLzaPfds7atB9LvXy4Z/UABjn7nN4pd1CLduYsGzVMaVRAscbb3Y+We48G69byRIJdeptWl+14DMzvMSVlNq8/fpOiqZNn2PvDWao6xAPesLHiu0zp63mMiHJ2/wkz75WtIczBlhH16WKRFkz6DmX5E97tcGOFfOWneyd7rpTU1HB4DJ6kIOVWUz3+MBJHJNPAPCLP8TIu7Dgi2bHIn6NANenHY/P9HA3sEpIiRdk6Wuednp6NLaPLVf9dWJxTMTDOJNXXVSST5dzwic+o/9eBUzbVGXvylflhKZTIr0xchu3cHPYJaPTbArwaEQ/FqSelJGoaOQaeeqKjwydc86SUnNKvVtyc3DEYRcDTpr3OuxPmNWfKgdBwW/D9hkmZFnE2YdZjYTJkgeckNwD0CnbtjrO+1PHjm/l8pJuiSUaQh9jplVdf+IPy2N84XB9a/ko8Sfyi9eeH2Grhl8XB+Fl9GXbsPl3FFeS+buFOnvepbqmvfAYXpQUYMwvMzZ2sDRDkL/67VgpLubjFNzaGMFfqLzCJFaSHWKyvBIu8/Hed3qxgCMdBytAY7dfwd+9xRDyuPmkyHrJtkVBySgwggBwXGmh9DgGbCfL8dKb3MDBMK8qB3spq+LRgxb09Fe3Uo8G3+5KvrlK/mtsYUvL3kSh3xKWS8u5/M+5yufC4mmpJ4nHWnALRX831SE5sxCIEIbji4BqrOFqDcfm80ByWMWIaDZFPGBf6q4e5ABsXWkK3v5CGLjAeesOVVY73N5QaExN6AfkxgeUR7xCFbWY4T5OuaGKmxq2f3OnJnpl8lTL8f9IWO4Z6P214CoHuHsqZMqQHivbCzMzpRjhAM8teSqk0DXEv8Oxl4IlLxRh6Ttyvs2piSN0ezFJq/ZBMDa6F8ugLhXN+FCm+wbLD/dkMWbHpYiQe24tbeq5IVPLF4yzgg+pFtNeY8CA7oYAm46rePhP1qexjl38SImMy0Z0qqpmZpqvdyKXfllB/ECSImQcNpZ3qqormljjm6Lt4n0P+0e9FO9ty+ogZiDcEx4TV7lzQ2pwn75HOZYTWRvrz1aOiHWSP101OcTkqx7ZOr7aiseUy5Yby9J8zLJrR+/u/FWYSFnfE/ds0ZGRbmSvRKnrIUzDtRk+Gmmt5yqVvjHCU4bhjh4uhx5uCPhfSwHxfrgqRWx6UslJAgFnPF26tHnTlHcA9P1Xh1qcKqZIRVp5/CnF5pcOFGX5dvqwnEiPOJYMCCmCdOEvY4xrPX0HIRvpgBIl6jUmaErWDQH6zCI4hjdNjs1XBrwaDxRZIkhFuIA6F2mtxl1LDOQwsbljzQsRQKBmNXMpJdLzMb4BT0RlvjpMoLf/HUPs54mrvn9iWrX3gkxResfFcoiLAmS9qo4u8RZJeMTM88/LjX697Ov9knVo0m0zX4OCk/eMsdtt3jMnNijPg6ReXozJwVGxdoTzbX9BilIpPa6o7U3eKqklZLGIcGkIARwrohz23upUua8Ai/EOD6WdbVczvK2Q19j0AyCP3GZGDCx7jHsgjzDvVG74zWlvniOCHfjc6bdMkGm8AYWXDm1l7bPbBzctZ5sbe0WLCeRc/a1JTao93bHKqejPellCorUvB3uuoSKgVZdNZDPtbSssM5+ar0gutZYrBAC/GESJ+26rVMIS4ibHCxep7fXlopT+pFM2L7qJGPIcI+UeyHp/snkSmGyYsJmH7L63ukdOWHzxHvkNju79cZU3bTh1HD1Cbkx75Ojqw5oIsZ7DBoobVlirlz9n1ZLblp0Z5SVuVSqNIMlwQeoMcQ2M8nagGF6J4+Cpj6QrIbwdblh+KbONkHWxON5ldp3KHQQXLZ6OEYyIywB+zoCgOo00wEZFM2wt7EEWxy2JWbV5qghKFggJIbcoLJvUqCvHbDJhYQrBhUQMEcHg9QeRFgs+H33dqgOYWk+cOIVFWrUTiqTYZBYgcQJc3yerN4lDnDYq1SaeizhZdRDZ7jZh4sHWB4cYP4HZy1j0llRMwZxmNbaY0QSB71b2/h9AghybV1zwTcMQDraUFmgYyDv26C2MLcYIoGIoIOxapHmP9F4rm96JZ/sQ67X6Q1BPOkUyn47iBlE16p4rTmifbxdWWWytec7KzuNqM9WDy90UItWk4k1zwlRZ0UOHNsC+cHBGwPF9fpKiXdvkIXyelFhnhrXYS1Q4a7ukmSUv6D094cwsWmF4HhCPg/DAJ30OgDY3XOm9R5+HiIHP2ZTSS9JMaiTkd9NC7iCUYSHzqE4+EYhpKa5LF0RAM0Mb/HuRZuDB1tBLK4y+MjwRew9BHMi3nfyKKBsRSEVmg1s56sk0XKrhIC0pSeB3i1ErMeqNtVFnhadVMap2ljkji5o7/9dHZnm/N0uyxQ6joKDwWLTcNQ8np7JdkZnzjGvEPBMkoKWYkcHvX0c5tcZKzM9nnm1qmv4WiYGTZGr3HU7aas4Dm/KdAWlG725GPRNCqx42Ja1XIzwnhHBt6DBmsswhR7JjiPJ+9Af9hIjXzE5ht6CLiW3DYAQJLYJ5g7VwkLm8x15pvyYQV+8FplJQAMxXi5TeKV3CNoZf+qeNxAzlSNVTQ9WJ4Lpe+VJRgVKkM2FiD0EAz0LAiU8QMt3Snl3d5MduolSkCiScZS23fumnSOgulQr5TENX8otzIzqU9bZE3cuR7XC7KmucpCN5/1aMB1K/LjBdVYiiWSg8neCcRZXkIBEf9SazGxJxtkULm19xIyTZNWG7Vn87Ekmp7hSKn2o3UsvbS2gKfFMY8dZnGQP7D/W8CJFXUA6c3IO9Pl2t1k3/154Ns8smEgSb+fUfkwgkIfeQVu9urlz0VsaNiIbiOWNY9uRc6bkRt/N6TlniTlS9viGXOHT8HpJglYjCP//gItrymJVNXxIl9YWbn3B0t9TzegvyhEqtIvldjchTmrIlON7k5A5mw/ncAz/pBw85cEDXqXOGL8PHBFMeWAVh+iiUFMceAVvKDi+ICkwTcdCmfzZx6LmV61b0xuiz974tfeEzm3RPaxQYriuIpYm6OAI90bW30NMW7hrqrGR6p6pRkG9dGa2V8HY/e7C1Xf72xG41+epxvRgnh4Kma5Vjnwwl74KrWy8LfVEElus4KHwS7+7Aci8bpHg6nwlBAYltESaTzpnafCZQBSQ7kk/gCrDFKhDJnvY1/ovyOFPwefK03HjoCa9VKhBQv5f7EZwm9ugDwy3eJUW0/hf8GBJjehkFs5JfJyXO07WvKoZjmmEoFXY11xBbjlQsasmm/DHhpqK68VNIEc+B6UirQkJVx+Qh3C1jgQZNLq+gRFGJ6dA1sfaboU7OjB/ae4fxRsMCyeq7bGPiJfxDF1zkgOQn9zBGFeSHg+2sjz7hTcQd5bTv9wwS44VOHsSWCMYCrBaURhTlmXDH6HCcxgeWQFt67njeyxlOa/IEsk7DYf261j4z/l1lqA/G5PmYIvtgv3JZT/dYNevtFbJHpMY5AspfZoIb8kd+0xMHpFhIzEU16TmnbdLnxkYlBYRggoE+ojWLhH9psHSJGvNd9FSlJE+lDCIQF0DT0x0dhQBkq6sc4rIoCWiRKdkNsV6Qq/PnD4IPDftniYekwGm61jH+8NMU39ObCa7vtP7IXYp8us4b7qwHSeeVYwrJ450OKo4PiTx6+jhAYQcKH/UvdcNa5GbuROFlUMQwqoVtO1Qt1+VuWbQ0Jarl20o3GGC74ceSNYAon+Tna0hpSHrrCQV5yS7zIYzH9jx63iNdijGPOFugDXvI0b80k4xfG6rOxLKqoICydMoPShxX5I2SocAgyJiqyMnLFY2mCWXUK3FRrZburxjm2oiwP9Yqm5qtQQVdfK2utaVJ0lKrhwIOUZW6c/br0wPy3DwbfpXbl5fcez4gsAGP/2DhG6uU4/uBbQup+8aZNQdeJdKL8HL9d5Hczrt0HuGuYOwCgcfG+KbVaO+2IRIaOx7iv2eby8MNicHbXBjrOzcTd6BwJ/UOSuhJK4tIT0MwId7DFtHmu15DC/YguA8+nHcBZ2/6AuuXIgdZXmTgkLrsO/QB1Ndpp6Gye38JVYDMPJ2zApmrBvYjT5n7wt7D6PcVmtj+Hv7TB61dkSGrQm2sf2Mb4ePt6haZhgG65Tf3nyG9wVPrp03rk0nGyZurMkbb0Ug5X6u8+kkbgGlzBAPIFKpeenYnaWD5x80NUNHQD76P0bxh7gZxv7Zy1GBA9WGo0419UR4y3sL3vhDNmAP+zVp1rId0UKnkwrnKugUINvRiJsK/Z42P919QIfIS8QkyjFZkKpk4jokMXhfpJ6gXV0Nx/gOygvCmCjoZvpr+TTWUq2zGUl3412jH8VgepnUMZ7DQ64vCsMeY5yeOiVv3yzw3Nwmz8E7Fe+BV2K8M1/hSJa9you2kKjt00FVKfHKU9b4zZ6rwsmw1Cteh7shEVBYmXPCWaeNNb1QUo/4a3TSyhh/TltsTKpRxtkJv17/2bpOSzamAaaXP1ZeXSOS2L7dIALcO04OJnAoG+b4OORod7rarPlVcbhGrSj+TwAOD8fkDiA+8rxqlvjvfX9SZSHBizP390oOEgtbHX+TxJ3upCfskbHf1gTgafCDZjuHCJfYSAuYHGxdJ1Qk4KRTVMJELVkM8ovc7BPVSji2C1hCJ5PSTZLlFimSQnBYkIRmqoeG6uV+3cmMfB3FXr5SoyqwAs8009LQF3V0OweEtm5MMDN+SiXbNKc2ERc72Bq5nVrIw6eymEAsoTJAdX6XBjMaP0DfGDczOdvwwHjwZgIulEv4Q+SUuEVrY2vkG8xMl1F+K73lxJ6jedRkGNB64p+iHlKxCRoatE4DTed94fYnuYLegLSVwz1LUHqzl4XZllGyVY6EDluqKIukQ8fS/wP1o1wmsD3pl5rJZYtWl7sNwtTcXe6e5G23vlS51ucRfufRYrRuz+CJDZ+zMvq45jwbOFCDH5Wh6Pk9jJERfO0R0lDiF/ELTS5XjW6O+DKlVUxpccERDNqmZKlvB2p4QztoJzbpM82hyazLdVWv3m5w295tN8n6JOXe8L87FPokTQkVjpR1CS+7y5r4CzFAYKK/DtIaDV3dju9q/rawYH9IfQOUxKICGiYxvmzB6MIoHljBejnfBKEgzRZ/4vpxMPs7lELVcrZ06PFDt2Tg/ncfXeuwSFrGYvQ8Csge1RUqrtqof7ruu9yq9UyGRYSY/cdGN7xyRy3u6xJ5wV+EhfpAXBGUdrYRJmoJgWXHadKyLd5v6A59nWHx8mhUsCjpvSVmjP0YRqgipqnsZdTp1Lgfn7IHyfXjQn7ZFIXm+WEYU6LNZ1mQFzdeH5SFiaGwJgoUNsWehj14rwlstYJPVebu0qSnpFXfwWCd+D7wVOK1+2jCXOC5xVS9ZgqlsY3UjIzVdb7LmvHU/8fYmSkW+mQYJcGYBF/YyExPp4BK86uVLLY/kFF6b5IUitadXNwQBPdGvvAgm5M7nmLZytYTOiVRPv79SQbeKvDjuc1zR94XScXRlJkQRlxWfUP5YebRCmddYUyPmF0cYGnIONM6rYWce8LdxQuRJQjwGXVArJcQwR3XrHBwhy1IjwGHtxN0oltB7V8LpOoebg9ZyQn2guwmpvSc9T54KiyeSHAdtXO3Fk39fgbl+MDiLpnlbH6vP9Ej9l19Yww3qZ8iUO+Ztg0FJd3f2rEJy4G4IP0/hGRMWQ0okkK3/EvvLHVSg5lWfmnQQiSSeF+YhN5LlU4hT4ytEN2KbK4VhsTkLd4q23YX0j8mv+kLKr16qVFxJ3JOMxnh3anIpApJ/8ICEgYincurNbb2oPCt+DePQF/3v9G61No27OCFOqd9ouvFUBYT4hAAtr38Pik0GrjMXmRVB7/+WzTpIgqOrQGn4CT+YwRVbZ1LtWXXI42UI7mdXAOQouRkhhfXlUZ04HXk9FkAmmeu3afaWzLHUGXuuyTOIYyHmQG6L7rLNDvXzg7HPayDazoq3g5MYhoeRxZi7njceCx9175QaLSgesK7aSJF0Yh5UKH+6uXjb3FW6YXUYgeEEKQnMG669jG9GDhAnf39HhZ21CNEovcsOpObHfn5ErODn4NDITWF3N5J5U0HzVV+dtuUXFdkFrMw1qb4L7s21wBDol9WtJXhIs7id0YFUD//V2ZNdaFGQJMM+b4SQbEG7kxGcqYd/sTTg5cG/OdcCJKsn62OejCOIlc/FJ/voJutP+/Bjp+MZCM0xEPg5KWQrM7p6DySlT/1kDSYcUHedOVG+ZKBpEwVmNAuc8/Ry6aCdrjt3upnt9srzSOun6IaEglSBDityJuMo/dV8V1RTs6fkg7zwpLksYo5qD/VSEUs0+izJ8VuaDaOUUItJQiUlgGaF4XLpi6lUu+wuKND8GZe03DeOjhF2phGh/B9MMlgY1CdMGYm6x6Zvy8oaJ+HEmkdJJvfL4QHKRlgSnc5M971rCMkXDU13ZbXU5kXroygyecm52ByJPdGGqx4P9AQqhiyZZMtUl+e6qWtuW2riQ1K3D6JFLOuWNKHOGwXRX+MnBqjpPC6FiAgg/i5GXWuaP43Laj4BLHFFFTOqHFycK2t2Qgvyeagk5aX04LTgzLcAWo8axE/KBgf4gsfLNjc2CsIRiRLy7NrMUrNTrOe0A3cI5YwVCB8KPpEbZpOiiFQxPi+hkz1LIWHB4e7WDdZf9r4q8HBI0K1fuhj3A5jOlUsIDY+YnYsLRJmX02eMkFyGDckYU99wAJMng5V2cxKlfJpFtW5wffmMiFIYFn691FQwcd1ChA5N5GbIh4Fn0GhCvSgXB5xiby8qUZAZ7q2Tz5O5cZaFNiCmxfeut5iexHgP1u72+5LTYxbZmrw4nAU87kqJUW8n9K+DZeiAPyZONHHcQdV6uhkLg85IRh2hukuBVYB1MhjpHWgkAfDZliWwMdFR65ow8gvR/+wEkWoc58n6MP+XWGwWxp0IsqSdDxvgvu9F4D2BybKNZyl/c1bz4+k33LTDPKenaTkcLRA5WzKNqk4CT0k552cWX3wKclovaGYbkhHYFksxY5DyD/0YTxYSCyUKGgAxEY2RcgetJOncNScw05Pr3gfz1u3rODFobqMBN7Hfv84VQxUShiFuHaTvHdLH+gwEy+RDQO+p8eRef/RrcAzYHubk3nuWRnPyRz5veTiS9iKDEJ6YaHiakhzN4joi/ICwaG+RzAsEkceeMbS7p3Nd9lIxNRto0m2Sjd8CxxfjngJlgY/GOXMAzbKfJNDxKKpTAOn8TrPDoxRN5b+O2cciGRZ76Xl9KJ4x3KHLazw9Oaocnhcjk022+vBnUdhVKfTzbRqHaQ+/8mhKY83H3VMqbAvDKzZe4W/HeZBVrnvTqbQW0dnYJuXzMF/LdoUL0KwBNw9zBtvdU2AMsBu3ZUTodxa3jreMVKfzwRy+NF27iKdV+WmxEuiW47T0obwUrgM1z1pDmoXt1gd9BzF776yNlkFWkady7nSQz2Tx4V072hyOjpyxMupYjgyOE6rOx96VjVlc2a2CZ2aqUcqIGG5TmDwYqgWX/Rf0OIjxXOwnRIp44o32zzZBQ6tEX7TkPoc9XtUkCeOnGylf/JH45Z+pouwFtERdtRA6CKUjIdSIOyZezxj5e5IW8FOYlGzLk5cCURAW9EQCp8ObodtPliu0YmG0U7CfJGZNZPpHco1RI33hHhf5f2wxvM4xpjKBV9lJY6OmujgZWfiaaWnM1Czd0w+/ktwFTD/JS/qBmOiPMzP7gDIlxp9zVb3ySwqRZOGInL5gOPpi1gPnkr6QsuMZCMFmouJBsQamou7ML9+E7k4zYoZ3MCzVycHQls+h8jdclFZBlaW2Rir0hxWR2i5SDtr7SvDTCx90NggaV+xE32vGChxJf36ArVjabRy0NSX9KlyDPNukINt6Gd2qNzoMsI6F4z3H5O1GARkGRVWeaVxMOeq2U0H3i7A0whOdmXGPm2HcxZ4VFc+TMo+d54N1T6K6CL7uyudMeDMAkL8NrSLU5Qy2/xGXjvt0MFdP/ZVr8RVFkBMRZYgPCDgfduXlmhtKV7qSnVqNKQnoIlkppFFtRdCzQ4tYDEIDx9C2Z1rGdKtJoIMlQpj+kr9FfSLKWSPU/hna2TB/Rqa6yl89WYKNAKZOuMPa9QTJ2VcCYjjjAyrOl1W6cm1oGlb+DLgE6l3QEHZeTipfc9B3Jk8nCe0foY+86xnnAUQ8y8vk1ZKZ5vmhJu0bRAy/GTbpkGHKq5I6z1FJ2zLlV0cDdx+wM4T85v9bNiD3wL4ELFuAWIYOnIS743yeTZ0qCA8M9nC6Evu1scBd4CuldcuixcqwaViVf2BGpDt5jhaztMMT36yYrYIWSZTilAUg66Ieh+d4BYAhh/PpObuim2kbRiyWcQ9TkRb2aBI74860f+xRBQ8ce9JAezv3iAJ3acg+GReMnxLgFtSZxXKQuYiPECghtWXHRh8SQh35OJxG2t+zZAd/HuI5O7LloCjzeVRl5IztRFOiUhYT1yr29P22QGeRI/4z6BR2EvTX1MLMjthWmhsLa3dOMyZk3BsE02AcLACFy7fpkwQpPWqkJ1ea1BvXV/6aaK3wvDqDHejjalb+SCs2U4cpuY3RlE7vvWlkwyI3r5MT756oixww/PMMMa0kBpMdPjP9Rsxq+KI6jp2Uoft5eY5N7VdIuEchPOQXHIPwipVg4P8cyMZODpuWwib2gpmDB9/qQx4f9ksf6ItXV8fZvotD/Bsrk9gy+co6pclreeUMwVK0H4oykz3ECUg/3N4waT3qjUfk1//kWXZpEzEIbFnt8UYJ/htz6of5jp1vhLR9nC69xdTOWss1jz4k0Smxm+9AtiOAgx3VECOZIwVAkIhyeOXzrcu4/f3463wQ1vER2dxz0upEXkaXik4i4tlL+kcNDTQh4kEeIN6H863eDKYy/gvRTIHU7uUKHv+ThR3hw7L+ZMDtLjuhgZu6FBfkNWy3BGs58YGesOoO1INC9p1Y2bLbF1ROTTyT8qi6VObfRMBN+m/bFR9CF0paiuwks1X4xVeNR0Q+Necxm5hZs1KaUnWyS5JJ8rYiUOGhlafe9JQJpk/w/L9J3UKwAEBensWvjPqs3iwcGG8COrD5cxTRxD4NJEuPTqz+E37kjIMVejYLyYu3czKFtno+OoLNnbHzS77gF84v9LCwC8LsKfdb+8vZ6MCbQEv2rfUi7cc3k/uV1FrKPhcxSgNfLKh/7NEhGxEVDimRIXKSD34rdkalpVaRQCgFM4/asGYG00Gk2Uq26/Ub5nYNTh/vPYBj9lSEaBU+Yjc53RpjoXkBNg5F4eoMUV90olNyHMDCs6QEieHFUTErwvOsrEOetqTQwMjSj3oUMwgVMGz0u7pSMJrXf4yNEoN0/hRNG7CsPJZHzdx4Z+yoMlvT3ipbe5VcBw8FLLdxa8xHy4Gt0NCNfzK6aqF9ZHnFpdXls1lEbdKNUwNa3KXj4AsKFKvZugWy9IsxcSbeeGoyz0envUnyiOhyWcKlaJGyubzE/UmtRhuPrfJO5rZr+YCqW5YWcVpf/AJWmsgnVHuM8vUhM9OM7j2i2nWe4Z79jAG4E87LacRFR56BEIL3ah9dRsFo+QC+uwdbXi5fN3eMbCQTXR1Mi1R3G1OPlSwAz1xp9431qKAt0/x6152whRL2UMnL3MIKrFeIFEOSpcVmmFiSBf9yrJCbLaar3VxQVMqPczcZmU0adflzihEunpci3LLqlxBu5I1KHRm3WW4O9w3orwxwQYBARXD7TN7N4yPeNigNursmrPaw3YGTmLSvUymTL5PQ0saFC7f6CoE7p80vCPYslKqPLqbcEYRlEMFPMXxqjPcrfisOZQutPe7Sv0Gl4zrGmRz2Dr30002zlGHhC4T05sZ6iiFn7KYuuWSKb6za3UdNZ+unpoOge11PwWlLkF4uY6jf559Fyl/rQY1Qxm35lANmCEwJpvfZgE0ORR0MJYbAZwbuDF7Rp8EiatbvbR75WCBqPLW0jSmYhOKbECcGtUASSMfv86iIIRmVXyYK663j//unKGAr9athvvO8Dg3KXUhnaGjaQnT16recGTQM+OEaHrnA8ZHaCAntNYzW4DDSbeC0Trpq1DL9FwLZU4740gBb1veVZWvifpXVBa4Q3a+d/PFud92unHhS/Q6pxwUDiAqNYi0UP9da1BlWYsiBstxKHMah5rA0J8M+pHNbr9MAHDknJXFaf/nPJiDNywDZS+5QefFDikiA5+iyO9DXPwhDtGSbyjBvn3C7Me+O79WxiArblidEmcTRwTmopd3tmmlJTOPr8M2RP9ETkrdlcOirdVUNaApHuC/cGzs0uHanXraeFXjO6aA9Gf4JxaI7Bhvbyt3RGEYPj2Xw2MXyF4veLa+eDIT1Csxp0U1QtYtvkVLqYryywBAXktArmymw5JUsHFzrXEJEn13mOympDIZQvDVIOoO7RK3WuzCYaDaTdHhiXkjc7m6322lTgp237fGLBGEGndPPkfsCh8bxJe9pffyOTWD4AYJyTvW6KkfrV6u+zHUDq5RQcQ5zTkafwacBqaMOUYEWqlVsF8TrYVDelHOEPWtoBxc3Ap2L0P0i+OJGnZw9YKmPGB2/YXpcQYPkYd34IB/Bi74YcqEljM++wHel6MSYEtezwPIDkIUX+S3ryMeRTJRxdFF4StbZiHzobhWSzFdiTPwSY/EjUmyAOrqhJ8yAmUw7HaU/NsF8e9x9Q1CLc2VX1I5RGIYMi5CCwDhbWq87x+iOt291xXOeB5mf00UtD8oBQAI1M9zcTEKqm6YjK97soJbWaef+lS4UV0/TQhGsOyVeDiR8559DZLKZik+dhwdCDjIOjXW17ID815T8Ro+hgywavnuZZmX+OIu2mEnJDfoAfsuCI8qycvcVdhti5Zdfwg4FcrsTp1WY11EDKpqeAvlnMGjZO6N2YRfC4YO59caxjNKfXqzQrAKPNiRu3pBbH9nN88Rdru9TvS9NVC4xtbhV2NQ0CEbT2zunK1XCffUvjbDNlGlSMdgk9RaqRi9eM7X9cQ/zkpL8xrkrHpzVlO9oJWRM6tkvvRziUmxD9fmZV7QfvDOpRMq4nfiLQTPMnZ2kE5R61CgUQ8zcp7otKdipyarxWqhAkTW5D67QB1kNt3fXNSEqprvc+1lLBUhH6aaqj4daRtUGt6998OXybrBOLV+5G8omcL+bQYr1SQVP4iLcsCcS00mN2HFkE1GdybKG5DIDcA2X65JQBYO9QdcnGzFQgL1oyIFG3zcSkw9Uio4aafPUfx8zUU2VYV9Vriq/8LH84okwxdwaEhb8H33BvAGbbCfpwMYG6xEqmZm/StQVfDufZbClJjQZ5RfyarfN49sFHbDWOxq3Ta7lLSJwoxyc2YJ1bEmw+CLAcZzzAprsEhf5yqXCdar9YKpcf3VR5/CJGBCbPC4p9JY+AfpSelaseDoOpt8sxgvlp5E0AO6KhNYPNm4KQG0+CBZYbgJ3OcJkCGLYckl9m3ZC9Hc1/U8QWpNAbghtDDeZvF9YbDiacboRgXseiQyDIhzEulA7LEtzS+T35jiyMxE/xnoB294LY+3gNLFebBD1XkYtg1/93X1Kbs2HuXXK/9yCUHgjHHiDoddjgPdHf2SsqYxmEjuOGQCPMMS5gamvPBKeJSjL/swIIW6I9pmyc8H8nAnsrMeuHfbaBchFkklnRhKinoAwtx/4EHrRVXIzjN3nb8YMDVtwucUbq+takU+OEcy2//xy3k4ErJJV6Qd3xEE/3ui/bA+9rfQcWdg1dEnZBXsEHQGbIQUJCvC37BEBYbdgXqJqejjAkmhEEmWO/yUdWlJi2t6Q/+WeOjTaYlyngj4PIKohUZnOPTC124HI02hIVxSaOySh/bBZXIysnZ/mi17c+Xb9d87UnLEPNNTqpJHHYI3ZlT7BEhRLHpJ0C2aGtUlTTOWeYMiKbZfF2g8Js0oRWAxGYqfjwLEO8Uwtplu6Uv91sq87qi1P921/7k4yBQws7JstmDPwD68U78nsLN5xV3L8qoRQEMw5ZvZyOrTxTFBVze7DhWoq3RlQ/ZudsS6lNVa6ZrhME93yMKWgtMirRnHumj6wYLCa287UWXH7iueSSJ5mv/Pt47cNjmtDctM9RuzAV3"}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+(function(){
+  'use strict';
+  const SLUG = location.pathname.replace(/[^a-z0-9]/gi,'').slice(-24) || 'clientmap';
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function unlock(pw){
+    const v = JSON.parse(document.getElementById('sealed').textContent);
+    const enc = new TextEncoder();
+    const km = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:b64(v.salt), iterations:v.iter, hash:'SHA-256'}, km, {name:'AES-GCM', length:256}, false, ['decrypt']);
+    const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64(v.nonce)}, key, b64(v.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+
+  const lock = document.getElementById('lock'), pwEl = document.getElementById('pw'), err = document.getElementById('err');
+  async function tryOpen(pw, remember){
+    err.textContent = 'Opening…';
+    try {
+      const data = await unlock(pw);
+      if (remember) localStorage.setItem('cm-pw-'+SLUG, pw); else localStorage.removeItem('cm-pw-'+SLUG);
+      lock.style.display = 'none';
+      init(data);
+    } catch (e) {
+      err.textContent = 'That passphrase didn’t work.';
+      localStorage.removeItem('cm-pw-'+SLUG);
+    }
+  }
+  document.getElementById('go').addEventListener('click', () => tryOpen(pwEl.value.trim(), document.getElementById('remember').checked));
+  pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') tryOpen(pwEl.value.trim(), document.getElementById('remember').checked); });
+  const saved = localStorage.getItem('cm-pw-'+SLUG);
+  if (saved) tryOpen(saved, true);
+
+  // ------------------------------------------------------------- the map
+  const STATUS = { new:'#2f6fd8', go:'#1f9d4a', hold:'#e0a100', pass:'#8a8f98', loi:'#7b3fd6', lease:'#e0631a', executed:'#0b6b3a' };
+  const STATUS_ORDER = ['executed','lease','loi','go','hold','new','pass'];
+  const BRAND_COLOUR = { grocery:'#16a34a', bigbox:'#2563eb', traffic:'#9333ea', competitor:'#dc2626' };
+  const DAY = { hospital:['H','#0e7490','Hospitals and medical campuses'], university:['U','#0f766e','Universities and colleges'], high_school:['S','#0369a1','High schools'], military:['M','#4b5563','Military installations'], office_park:['O','#7c2d12','Office parks and corporate campuses'] };
+  const LAYER_LABEL = { grocery:'Grocery anchors', bigbox:'Big box and club', traffic:'Traffic drivers (Scheels, Dick’s, REI, TJ Maxx, HomeGoods, Sierra, Ross, Marshalls, Kohl’s)', competitor:'Sandwich competitors' };
+  const DEFAULT_ON = new Set(['sites','territories','stores','pipeline','grocery','competitor','hospital']);
+
+  function init(data){
+    document.body.classList.toggle('desk', window.innerWidth >= 900);
+    const meta = data.meta || {};
+    document.getElementById('title').textContent = meta.title || document.title;
+    document.getElementById('stamp').textContent = 'Sites as of ' + fmt(meta.sites_as_of) + ' · page updated ' + fmt(meta.generated_at);
+
+    const map = L.map('map', { zoomControl: true, preferCanvas: true, worldCopyJump: false }).setView([39.55, -104.9], 9);
+    const aerial = L.layerGroup([
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Imagery: Esri, Maxar, Earthstar Geographics' }),
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, opacity: .9 }),
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 })
+    ]);
+    const street = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Map: Esri, HERE, Garmin, OpenStreetMap contributors' });
+    let onAerial = true; aerial.addTo(map);
+    const btnBase = document.getElementById('btn-base');
+    btnBase.addEventListener('click', () => { onAerial = !onAerial; if (onAerial) { map.removeLayer(street); aerial.addTo(map); btnBase.textContent = 'Street'; } else { map.removeLayer(aerial); street.addTo(map); btnBase.textContent = 'Aerial'; } });
+
+    const groups = {};
+    // territories
+    const terr = L.layerGroup();
+    (data.territories || []).forEach(t => {
+      const col = t.colour || '#3f60a0';
+      const gj = L.geoJSON({type:'Feature', geometry:t.geometry}, { style: { color: col, weight: 2, opacity: .9, fillColor: col, fillOpacity: .13 } });
+      gj.bindTooltip(esc(t.short) + ' · ' + esc(t.developer), { permanent: true, direction: 'center', className: 'terr-label' });
+      gj.bindPopup('<h4>' + esc(t.name) + '</h4><div class="kv"><b>Who can take sites here:</b> ' + esc(t.developer) + '</div><div class="note">' + esc(meta.territory_note || 'Boundary approximate.') + '</div>');
+      terr.addLayer(gj);
+    });
+    groups.territories = terr;
+
+    // sites
+    const sites = L.layerGroup(); const siteMarkers = {};
+    const sorted = (data.sites || []).slice().sort((a,b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) || a.name.localeCompare(b.name));
+    sorted.forEach((s, i) => {
+      const col = STATUS[s.status] || STATUS.new;
+      const icon = L.divIcon({ className: '', html: '<div class="pin" style="background:' + col + '"><span>' + (i+1) + '</span></div>', iconSize: [26,26], iconAnchor: [13,26], popupAnchor: [0,-24] });
+      const m = L.marker([s.lat, s.lon], { icon, title: s.name }).bindPopup(sitePopup(s, i+1, meta), { maxWidth: 320 });
+      siteMarkers[s.id] = m; sites.addLayer(m);
+    });
+    groups.sites = sites;
+
+    // existing stores
+    const stores = L.layerGroup();
+    (data.stores || []).forEach(st => {
+      const icon = L.divIcon({ className:'', html:'<div class="store">' + esc(st.store_no || '★') + '</div>', iconSize:[22,22], iconAnchor:[11,11], popupAnchor:[0,-12] });
+      stores.addLayer(L.marker([st.lat, st.lon], { icon, title: st.name }).bindPopup('<h4>' + esc(meta.client || 'Store') + (st.store_no ? ' #' + esc(st.store_no) : '') + '</h4><div class="kv">' + esc(st.address) + ', ' + esc(st.city) + '</div><div class="kv"><b>Existing store</b>' + (st.status && st.status !== 'open' ? ' · ' + esc(st.status.replace('_',' ')) : '') + '</div>'));
+    });
+    groups.stores = stores;
+
+    // development pipeline
+    const pipe = L.layerGroup();
+    (data.pipeline || []).forEach(p => {
+      const cls = p.kind === 'competitor-opening' ? 'dev comp' : 'dev';
+      const icon = L.divIcon({ className:'', html:'<div class="' + cls + '"></div>', iconSize:[22,22], iconAnchor:[11,11], popupAnchor:[0,-12] });
+      pipe.addLayer(L.marker([p.lat, p.lon], { icon, title: p.title }).bindPopup('<h4>' + esc(p.title) + '</h4><div class="kv"><b>' + esc(kindLabel(p.kind)) + '</b>' + (p.status ? ' · ' + esc(p.status) : '') + '</div>' + (p.address ? '<div class="kv">' + esc(p.address) + '</div>' : '') + '<div class="kv"><b>Territory:</b> ' + esc(p.region || '') + (p.region_who ? ' — ' + esc(p.region_who) : '') + '</div><div class="kv">' + esc(p.summary || '') + '</div>' + (p.source ? '<div class="note">Source: ' + esc(p.source) + (p.reported ? ' (' + esc(p.reported) + ')' : '') + '. Reported, not yet confirmed with the developer.</div>' : '')));
+    });
+    groups.pipeline = pipe;
+
+    // anchors, competitors, daytime drivers: light circle markers, only drawn at zoom >= 10
+    const layers = data.layers || {};
+    const dotGroups = {};
+    Object.keys(layers).forEach(cat => {
+      const g = L.layerGroup(); const items = layers[cat] || [];
+      items.forEach(it => {
+        let mk;
+        if (DAY[cat]) {
+          const [letter, col] = DAY[cat];
+          mk = L.marker([it.lat, it.lon], { icon: L.divIcon({ className:'', html:'<div class="day" style="background:' + col + '">' + letter + '</div>', iconSize:[22,22], iconAnchor:[11,11], popupAnchor:[0,-12] }), title: it.name });
+        } else {
+          const col = BRAND_COLOUR[cat] || '#333';
+          mk = L.circleMarker([it.lat, it.lon], { radius: cat === 'competitor' ? 5 : 6, color: '#fff', weight: 1.5, fillColor: col, fillOpacity: .95 });
+        }
+        mk.bindPopup('<h4>' + esc(it.name || it.brand) + '</h4><div class="kv"><b>' + esc(it.sub || it.brand || DAY[cat] ? (it.sub || it.brand || DAY[cat][2]) : cat) + '</b>' + (it.status && it.status !== 'open' ? ' · ' + esc(it.status) : '') + '</div><div class="note">Location from OpenStreetMap.</div>');
+        g.addLayer(mk);
+      });
+      dotGroups[cat] = g; groups[cat] = g;
+    });
+
+    const on = new Set(DEFAULT_ON);
+    function apply(){
+      Object.keys(groups).forEach(k => {
+        const want = on.has(k) && (!dotGroups[k] || map.getZoom() >= 10);
+        if (want && !map.hasLayer(groups[k])) groups[k].addTo(map);
+        if (!want && map.hasLayer(groups[k])) map.removeLayer(groups[k]);
+      });
+      if (map.hasLayer(groups.sites)) groups.sites.eachLayer(l => l.bringToFront && l.bringToFront());
+    }
+    map.on('zoomend', apply);
+    apply();
+
+    // fit to the sites, or the territories
+    const pts = sorted.map(s => [s.lat, s.lon]);
+    if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.15)); else if (data.territories && data.territories.length) map.fitBounds(terr.getBounds());
+
+    // panels
+    const counts = meta.counts || {};
+    function layersPane(){
+      let h = '<h2>Layers</h2>';
+      const rows = [['sites','Sites for ' + esc(meta.client || 'the client'), 'pin'], ['territories','Territories (approximate)','terr'], ['stores','Existing ' + esc(meta.client || '') + ' stores','store'], ['pipeline','New development and anchor pipeline','dev']];
+      rows.forEach(([k, label, kind]) => { h += row(k, label, swatch(kind), counts[k]); });
+      h += '<h3>Anchors</h3>';
+      ['grocery','bigbox','traffic'].forEach(k => { h += row(k, LAYER_LABEL[k], '<span class="sw" style="background:' + BRAND_COLOUR[k] + '"></span>', counts[k]); });
+      h += '<h3>Daytime drivers</h3>';
+      Object.keys(DAY).forEach(k => { h += row(k, DAY[k][2], '<span class="sw" style="background:' + DAY[k][1] + '"></span>', counts[k]); });
+      h += '<h3>Competitors</h3>' + row('competitor', LAYER_LABEL.competitor, '<span class="sw" style="background:' + BRAND_COLOUR.competitor + '"></span>', counts.competitor);
+      h += '<h3>Pin colours</h3>';
+      Object.keys(STATUS).forEach(k => { h += '<div class="row"><span class="sw" style="background:' + STATUS[k] + '"></span>' + esc((meta.status_legend || {})[k] || k) + '</div>'; });
+      h += '<div class="note" style="margin-top:8px">Anchors, competitors and daytime drivers appear once you zoom in. ' + esc(meta.territory_note || '') + '</div>';
+      h += '<div class="foot">Anchor and competitor locations from OpenStreetMap contributors, pulled ' + fmt((meta.layers_as_of||{}).anchors) + '. Existing stores from the ' + esc(meta.client || '') + ' locator, ' + fmt((meta.layers_as_of||{}).stores) + '. Pipeline items are reported from public sources and not yet confirmed with the developer.</div>';
+      h += '<div class="foot">' + esc(meta.contact_line || '') + '</div>';
+      return h;
+    }
+    function row(k, label, sw, n){ return '<label class="row"><input type="checkbox" data-layer="' + k + '"' + (on.has(k) ? ' checked' : '') + '>' + sw + '<span>' + label + '</span>' + (n != null ? '<span class="n">' + n + '</span>' : '') + '</label>'; }
+    function swatch(kind){ return kind === 'pin' ? '<span class="sw" style="background:' + STATUS.new + '"></span>' : kind === 'store' ? '<span class="sw sq" style="background:#1b2a4a"></span>' : kind === 'dev' ? '<span class="sw dia" style="background:#c04b8f"></span>' : '<span class="sw" style="background:#3f60a0;opacity:.5"></span>'; }
+    function listPane(){
+      let h = '<h2>Sites (' + sorted.length + ')</h2><div class="sites-list">';
+      sorted.forEach((s, i) => {
+        h += '<div class="item" data-site="' + esc(s.id) + '"><b>' + (i+1) + '. ' + esc(s.name) + ' <span class="chip" style="background:' + (STATUS[s.status]||'#888') + '">' + esc(s.status_label) + '</span></b><span>' + esc(s.address) + ', ' + esc(s.city) + ' · ' + esc(s.region) + (s.region_who ? ' (' + esc(s.region_who) + ')' : '') + '</span></div>';
+      });
+      h += '</div><div class="foot" style="margin-top:10px"><button onclick="window.print()" style="padding:8px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer">Print / save as PDF</button></div>';
+      return h;
+    }
+    function wire(container){
+      container.querySelectorAll('input[data-layer]').forEach(cb => cb.addEventListener('change', e => { const k = e.target.getAttribute('data-layer'); if (e.target.checked) on.add(k); else on.delete(k); apply(); }));
+      container.querySelectorAll('.item[data-site]').forEach(el => el.addEventListener('click', () => { const m = siteMarkers[el.getAttribute('data-site')]; if (!m) return; if (!on.has('sites')) { on.add('sites'); apply(); } map.setView(m.getLatLng(), Math.max(map.getZoom(), 14)); m.openPopup(); if (!document.body.classList.contains('desk')) sheet.classList.remove('open'); }));
+    }
+    const sheet = document.getElementById('sheet'), sheetpane = document.getElementById('sheetpane'), sidepane = document.getElementById('sidepane');
+    let mode = 'layers';
+    function render(){
+      if (document.body.classList.contains('desk')) { sidepane.innerHTML = layersPane() + '<hr style="border:0;border-top:1px solid var(--line);margin:12px 0">' + listPane(); wire(sidepane); }
+      else { sheetpane.innerHTML = mode === 'layers' ? layersPane() : listPane(); wire(sheetpane); }
+    }
+    document.getElementById('btn-layers').addEventListener('click', () => { if (document.body.classList.contains('desk')) { document.getElementById('side').scrollTop = 0; return; } if (mode === 'layers' && sheet.classList.contains('open')) sheet.classList.remove('open'); else { mode = 'layers'; render(); sheet.classList.add('open'); } });
+    document.getElementById('btn-list').addEventListener('click', () => { if (document.body.classList.contains('desk')) { const el = sidepane.querySelector('.sites-list'); if (el) el.scrollIntoView(); return; } if (mode === 'list' && sheet.classList.contains('open')) sheet.classList.remove('open'); else { mode = 'list'; render(); sheet.classList.add('open'); } });
+    map.on('click', () => sheet.classList.remove('open'));
+    window.addEventListener('resize', () => { const d = window.innerWidth >= 900; if (d !== document.body.classList.contains('desk')) { document.body.classList.toggle('desk', d); render(); setTimeout(() => map.invalidateSize(), 50); } });
+    render();
+
+    // print view
+    let pv = '<h1>' + esc(meta.title || '') + '</h1><div>Sites as of ' + fmt(meta.sites_as_of) + '. ' + esc(meta.territory_note || '') + '</div><table><tr><th>#</th><th>Site</th><th>Status</th><th>Territory</th><th>Size</th><th>Asking</th><th>NNN</th><th>Traffic</th><th>Notes</th></tr>';
+    sorted.forEach((s, i) => { pv += '<tr><td>' + (i+1) + '</td><td>' + esc(s.name) + '<br>' + esc(s.address) + ', ' + esc(s.city) + '</td><td>' + esc(s.status_label) + '</td><td>' + esc(s.region) + (s.region_who ? '<br>' + esc(s.region_who) : '') + '</td><td>' + esc(sizeText(s)) + '</td><td>' + esc(rentText(s)) + '</td><td>' + esc(nnnText(s)) + '</td><td>' + esc(s.traffic || '') + '</td><td>' + esc(s.notes || '') + (s.brochure_url ? '<br>' + esc(s.brochure_url) : '') + '</td></tr>'; });
+    pv += '</table><div style="margin-top:8px">' + esc(meta.contact_line || '') + '</div>';
+    document.getElementById('printview').innerHTML = pv;
+  }
+
+  function sitePopup(s, n, meta){
+    let h = '<h4>' + n + '. ' + esc(s.name) + '</h4>';
+    h += '<div class="kv"><span class="chip" style="background:' + (STATUS[s.status]||'#888') + '">' + esc(s.status_label) + '</span></div>';
+    h += '<div class="kv">' + esc(s.address) + (s.corner ? ' (' + esc(s.corner) + ')' : '') + ', ' + esc(s.city) + (s.zip ? ' ' + esc(s.zip) : '') + '</div>';
+    h += '<div class="kv"><b>Territory:</b> ' + esc(s.region) + (s.region_who ? ' — ' + esc(s.region_who) + ' can take it' : '') + '</div>';
+    const size = sizeText(s), rent = rentText(s), nnn = nnnText(s);
+    if (size) h += '<div class="kv"><b>Size:</b> ' + esc(size) + '</div>';
+    if (rent) h += '<div class="kv"><b>Asking:</b> ' + esc(rent) + (nnn ? ' + ' + esc(nnn) + ' NNN' : '') + '</div>';
+    else if (nnn) h += '<div class="kv"><b>NNN:</b> ' + esc(nnn) + '</div>';
+    if (s.traffic) h += '<div class="kv"><b>Traffic:</b> ' + esc(s.traffic) + '</div>';
+    if (s.notes) h += '<div class="kv">' + esc(s.notes) + '</div>';
+    if (s.brochure_url) h += '<div class="kv"><a href="' + esc(s.brochure_url) + '" target="_blank" rel="noopener noreferrer">' + esc(s.brochure_label || 'Brochure') + ' ↗</a></div>';
+    h += '<div class="kv"><a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(s.lat + ',' + s.lon) + '" target="_blank" rel="noopener noreferrer">Open in Google Maps ↗</a></div>';
+    return h;
+  }
+  function sizeText(s){ return s.size_sf ? Math.round(s.size_sf).toLocaleString() + ' SF' : (s.size_text || ''); }
+  function rentText(s){ return s.rent_psf ? '$' + s.rent_psf.toFixed(2) + '/SF' : (s.rent_text || ''); }
+  function nnnText(s){ return s.nnn_psf ? '$' + s.nnn_psf.toFixed(2) + '/SF' : (s.nnn_text || ''); }
+  function kindLabel(k){ return ({'development':'New development','anchor-opening':'Anchor opening','anchor-announced':'Anchor announced','competitor-opening':'Competitor opening','land-purchase':'Land purchase'})[k] || (k || ''); }
+  function fmt(iso){ if (!iso) return 'n/a'; const d = new Date(iso); if (isNaN(d)) return iso; return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+})();
+</script>
+</body>
+</html>
