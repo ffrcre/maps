@@ -1,0 +1,78 @@
+{
+ "built": "2026-09-15T19:49:06",
+ "counties": [
+  {
+   "county": "Denver",
+   "parcels": 17885,
+   "file": "data/Denver.json.gz",
+   "bytes": 709245
+  },
+  {
+   "county": "Arapahoe",
+   "parcels": 15222,
+   "file": "data/Arapahoe.json.gz",
+   "bytes": 562167
+  },
+  {
+   "county": "Douglas",
+   "parcels": 13527,
+   "file": "data/Douglas.json.gz",
+   "bytes": 435184
+  },
+  {
+   "county": "Weld",
+   "parcels": 12727,
+   "file": "data/Weld.json.gz",
+   "bytes": 490143
+  },
+  {
+   "county": "Larimer",
+   "parcels": 10752,
+   "file": "data/Larimer.json.gz",
+   "bytes": 445835
+  },
+  {
+   "county": "El Paso",
+   "parcels": 10505,
+   "file": "data/El_Paso.json.gz",
+   "bytes": 530702
+  },
+  {
+   "county": "Boulder",
+   "parcels": 9131,
+   "file": "data/Boulder.json.gz",
+   "bytes": 355794
+  },
+  {
+   "county": "Adams",
+   "parcels": 7246,
+   "file": "data/Adams.json.gz",
+   "bytes": 348289
+  },
+  {
+   "county": "Jefferson",
+   "parcels": 6650,
+   "file": "data/Jefferson.json.gz",
+   "bytes": 377758
+  },
+  {
+   "county": "Pueblo",
+   "parcels": 5260,
+   "file": "data/Pueblo.json.gz",
+   "bytes": 255964
+  },
+  {
+   "county": "Broomfield",
+   "parcels": 1231,
+   "file": "data/Broomfield.json.gz",
+   "bytes": 59054
+  }
+ ],
+ "parcels": 110136,
+ "overlay": {
+  "file": "data/overlay.json.gz",
+  "flags": 7076,
+  "listings": 5488,
+  "bytes": 237963
+ }
+}
