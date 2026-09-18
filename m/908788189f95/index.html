@@ -237,6 +237,77 @@ button{ background:none; border:0; cursor:pointer; touch-action:manipulation; }
 .hint{ font-size:11px; color:var(--faint); margin-top:7px; line-height:1.4; }
 .hint.warn{ color:#9a6a12; }
 
+
+/* ---------- the deals-first sidebar, the account view, the card (2026-09-18) ---------- */
+#home{ padding:12px 12px 8px; }
+#home h3, #acct h3{ font-size:10.5px; text-transform:uppercase; letter-spacing:.075em; color:var(--faint); margin:10px 2px 8px; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
+.deal{ display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:10px 11px; border-radius:12px; border:1px solid var(--hair); margin-bottom:6px; background:var(--panel); transition:all .16s var(--ease); }
+.deal:hover{ border-color:var(--navy); box-shadow:var(--shadow-card); transform:translateY(-1px); }
+.deal .strip{ display:flex; flex-direction:column; gap:2px; width:6px; flex:0 0 auto; }
+.deal .strip i{ display:block; height:6px; border-radius:2px; }
+.deal .tx{ flex:1; min-width:0; }
+.deal .tx b{ display:block; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.deal .tx span{ display:block; font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.deal .n{ font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.deal .n.hot{ background:var(--accent); color:#fff; border-radius:9px; padding:1px 7px; }
+.plays{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.play{ text-align:left; padding:9px 10px; border-radius:11px; background:var(--sink); font-size:12px; font-weight:650; min-height:44px; display:flex; align-items:center; gap:7px; }
+.play:hover{ background:#ebebe9; }
+.play .ic{ font-size:15px; }
+#srcs{ margin:14px 2px 0; padding-top:10px; border-top:1px solid var(--hair2); font-size:11.5px; color:var(--muted); line-height:1.5; }
+#srcs b{ color:var(--ink); font-weight:650; }
+#srcs .stale{ color:var(--accent); font-weight:650; }
+#srcs .bk{ display:inline-block; margin:6px 6px 0 0; padding:6px 10px; border-radius:9px; background:var(--navy); color:#fff; font-weight:700; font-size:11.5px; text-decoration:none; cursor:grab; }
+#srcs .how{ margin-top:6px; font-size:11px; color:var(--faint); }
+#acct{ padding:0 12px 16px; }
+.acct-head{ padding:12px 2px 6px; display:flex; gap:10px; align-items:center; }
+.acct-head img{ height:26px; width:auto; max-width:90px; border-radius:4px; }
+.acct-head .t{ font-size:16px; font-weight:750; letter-spacing:-.02em; line-height:1.2; }
+.acct-head .k{ font-size:11.5px; color:var(--muted); margin-top:1px; }
+.backlink{ font-size:12px; color:var(--yours); font-weight:650; padding:8px 2px 0; display:inline-block; }
+.thchips, .gchips{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 8px; }
+.thchips .chip[aria-pressed="true"]{ background:var(--navy); border-color:var(--navy); }
+.gchips .chip{ padding:5px 10px; min-height:30px; font-size:12px; }
+.lg{ display:flex; gap:5px 12px; flex-wrap:wrap; font-size:11px; color:var(--muted); margin:0 0 8px; }
+.lg i{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+.lg i.hollow{ background:none!important; border:1.5px dashed var(--navy); }
+.site{ display:flex; gap:9px; align-items:flex-start; width:100%; text-align:left; padding:8px 8px 8px 10px; border-radius:11px; border:1px solid var(--hair2); margin-bottom:5px; background:var(--panel); position:relative; }
+.site:hover{ border-color:var(--hair); background:#fbfbfa; }
+.site.cur{ border-color:var(--navy); box-shadow:inset 3px 0 0 var(--navy); }
+.site .dot{ width:11px; height:11px; border-radius:50%; flex:0 0 auto; margin-top:3px; }
+.site .dot.hollow{ background:none!important; border:1.5px dashed var(--navy); }
+.site .tx{ flex:1; min-width:0; }
+.site .tx b{ display:block; font-size:12.5px; line-height:1.3; }
+.site .tx span{ display:block; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.site .st{ font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#fff; border-radius:5px; padding:2px 6px; flex:0 0 auto; white-space:nowrap; }
+.site .st.hollow{ background:none!important; border:1px dashed var(--navy); color:var(--navy); }
+.site .ck{ width:18px; height:18px; border-radius:5px; border:1.5px solid var(--hair); display:grid; place-items:center; font-size:10px; color:#fff; flex:0 0 auto; margin-top:1px; }
+.site.on .ck{ background:var(--gold); border-color:var(--gold); }
+.site .th{ display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; background:var(--sink); border-radius:5px; padding:1px 5px; margin-right:4px; vertical-align:1px; }
+.sugrow{ padding:8px 10px; border-radius:11px; border:1px dashed var(--hair); margin-bottom:5px; font-size:12px; }
+.sugrow b{ display:block; font-size:12.5px; }
+.sugrow span{ color:var(--muted); font-size:11px; display:block; margin-top:1px; }
+.sugrow .acts{ display:flex; gap:6px; margin-top:6px; }
+.sugrow .acts button, .sugrow .acts a{ padding:6px 10px; border-radius:8px; background:var(--sink); font-size:11.5px; font-weight:650; color:var(--ink); text-decoration:none; min-height:32px; display:inline-flex; align-items:center; }
+.sugrow .acts .pri{ background:var(--navy); color:#fff; }
+.pbar{ position:sticky; bottom:8px; margin:10px 0 0; background:var(--navy); color:#fff; border-radius:13px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:12.5px; box-shadow:var(--shadow-float); }
+.pbar button{ padding:7px 11px; border-radius:9px; background:rgba(255,255,255,.14); color:#fff; font-weight:700; font-size:12px; min-height:34px; }
+.pbar button.go{ background:var(--gold); width:auto; min-height:34px; padding:7px 12px; }
+.pbar button:disabled{ opacity:.45; }
+#dbody .photo{ width:100%; height:150px; object-fit:cover; display:block; background:var(--sink); }
+#dbody .nophoto{ padding:8px 15px 0; font-size:11px; color:var(--faint); }
+#dbody .mini{ height:170px; border-radius:10px; overflow:hidden; background:#dfe3e8; margin-top:6px; }
+#dbody details.hist{ margin-top:6px; }
+#dbody details.hist summary{ list-style:none; cursor:pointer; font-size:12px; font-weight:700; color:var(--yours); padding:4px 0; }
+#dbody details.hist summary::-webkit-details-marker{ display:none; }
+#dbody .hl{ font-size:11.5px; color:var(--muted); padding:5px 0; border-top:1px solid var(--hair2); line-height:1.45; }
+#dbody .hl b{ color:var(--ink); font-weight:650; }
+#dbody .acctline{ font-size:12.5px; font-weight:650; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+#dbody .src{ font-size:10.5px; color:var(--faint); }
+#dbody .mk{ background:rgba(138,31,45,.08); }
+.tag.mk{ background:rgba(138,31,45,.14); color:#7a1a27; border:1px dashed rgba(138,31,45,.5); }
+.mkpin{ }
+
 /* ---------- top bar ---------- */
 #top{
   position:absolute; top:0; left:0; right:0; z-index:1000;
@@ -459,21 +530,23 @@ kbd{ font:inherit; font-size:10px; background:var(--sink); border:1px solid var(
     </div>
     <div id="peek">
       <span class="grab"></span>
-      <div class="pt"><div class="pk" id="peekk">Property map</div><div class="pv" id="peekv">Pick a purpose</div><div class="pn" id="peekn"></div></div>
+      <div class="pt"><div class="pk" id="peekk">Fox Atlas</div><div class="pv" id="peekv">Your deals</div><div class="pn" id="peekn"></div></div>
       <span class="pchev">⌃</span>
     </div>
     <div id="purposebar">
       <button id="purposebtn" aria-haspopup="dialog">
         <span class="ic" id="pic">🎯</span>
         <span class="tx">
-          <span class="lbl">What you're doing</span>
-          <span class="val" id="pval">Pick a purpose</span>
+          <span class="lbl">Run a play</span>
+          <span class="val" id="pval">Chase listings, find sites, look something up…</span>
         </span>
         <span class="chev">▾</span>
       </button>
     </div>
     <div id="run">
-      <div id="runbody"></div>
+      <div id="home"></div>
+      <div id="acct" hidden></div>
+      <div id="runbody" hidden></div>
       <details id="byhand"><summary>Adjust the filters by hand</summary><div id="filters"></div></details>
     </div>
   </aside>
@@ -487,6 +560,7 @@ kbd{ font:inherit; font-size:10px; background:var(--sink); border:1px solid var(
   </div>
   <div id="count" class="glass"><span class="spin"></span><span class="dim">loading</span></div>
   <div class="spacer"></div>
+  <button class="tbtn glass" id="btnbase" title="Map or aerial">◈ Aerial</button>
   <button class="tbtn glass hidesm" id="btnradius">◎ Circle</button>
   <button class="tbtn glass" id="btnlist">☰ List</button>
 </div>
@@ -532,7 +606,7 @@ kbd{ font:inherit; font-size:10px; background:var(--sink); border:1px solid var(
 </div>
 
 <div id="mobtabs">
-  <button id="tabrun" aria-pressed="true"><span class="ic">▶</span>Run</button>
+  <button id="tabrun" aria-pressed="true"><span class="ic">◆</span>Deals</button>
   <button id="tabmap"><span class="ic">◉</span>Map</button>
   <button id="tablist"><span class="ic">☰</span>List</button>
 </div>
@@ -540,8 +614,8 @@ kbd{ font:inherit; font-size:10px; background:var(--sink); border:1px solid var(
 <div id="scrim" role="dialog" aria-modal="true" aria-labelledby="sheettitle">
   <div id="sheet">
     <header>
-      <h2 id="sheettitle">What are you doing?</h2>
-      <div class="sh">Pick the reason you opened the map. It turns into a short, numbered play, and what the end buttons do depends on it.</div>
+      <h2 id="sheettitle">Run a play</h2>
+      <div class="sh">A play turns the map into a short, numbered run, and what the end buttons do depends on it. Your deals are on the map already; these are the shortcuts.</div>
     </header>
     <div id="sheetscroll">
       <div id="opts"></div>
@@ -558,6 +632,8 @@ kbd{ font:inherit; font-size:10px; background:var(--sink); border:1px solid var(
 const MANIFEST = {"built":"2026-09-18T05:56:22","counties":[{"county":"Denver","parcels":17885,"file":"data/Denver.json.gz","bytes":709245},{"county":"Arapahoe","parcels":15222,"file":"data/Arapahoe.json.gz","bytes":562167},{"county":"Douglas","parcels":13527,"file":"data/Douglas.json.gz","bytes":435184},{"county":"Weld","parcels":12727,"file":"data/Weld.json.gz","bytes":490143},{"county":"Larimer","parcels":10752,"file":"data/Larimer.json.gz","bytes":445835},{"county":"El Paso","parcels":10505,"file":"data/El_Paso.json.gz","bytes":530702},{"county":"Boulder","parcels":9131,"file":"data/Boulder.json.gz","bytes":355794},{"county":"Adams","parcels":7246,"file":"data/Adams.json.gz","bytes":348289},{"county":"Jefferson","parcels":6650,"file":"data/Jefferson.json.gz","bytes":377758},{"county":"Pueblo","parcels":5260,"file":"data/Pueblo.json.gz","bytes":255964},{"county":"Broomfield","parcels":1231,"file":"data/Broomfield.json.gz","bytes":59054}],"parcels":110136,"overlay":{"file":"data/overlay.json.gz","flags":7086,"listings":5498,"bytes":238619}};
 const PURPOSES = [{"id":"listings","icon":"\ud83d\udccb","title":"Chase listings","blurb":"Landlord rep. Owner-occupied, long-held retail you have never spoken to, which is where listings actually come from.","listLabel":"owners worth a call","base":{"know":["hideoff"]},"steps":[{"kind":"ground","title":"Pick your ground","do":"Draw a circle around the piece of the Front Range you want to work this month.","why":"Everything after this only looks inside that circle, so the list you end with is one you can actually drive.","button":"Drop a circle where I'm looking","miles":3},{"kind":"narrow","title":"Narrow to the ones worth a call","do":"Keep the retail buildings whose tax bill goes to the building itself, held fifteen years or more, that you have never spoken to and that nobody is listing.","why":"An owner who occupies and has held that long is the likeliest listing in the file, and anything already on the market belongs to another broker.","button":"Show me those","set":{"assets":["retail"],"know":["owneropp","nospoken","hideoff","unlisted"],"heldYears":15},"min":1,"relax":["held","owneropp","wider","office"]},{"kind":"cull","title":"Cull it","do":"Step through them and drop the ones you do not want. Takes two minutes.","why":"Eight good calls beat eighty cold ones. Your eye on the map is the best filter in the building.","button":"Start stepping"},{"kind":"finish","title":"Do something with it","do":"Turn the ones you kept into work.","actions":[{"id":"sheet","label":"Build the call sheet"},{"id":"handoff","label":"Hand it to Fox to check and stage"},{"id":"copy","label":"Copy the list"}]}]},{"id":"site-search","icon":"\ud83d\udd0d","title":"Find sites for a client","blurb":"Tenant rep. Every retail building and piece of land in the client's territory, including the ones nobody is marketing.","listLabel":"candidate sites","base":{"know":["hideoff"]},"steps":[{"kind":"ground","title":"Mark the territory","do":"Draw a circle around where the client wants to be.","why":"A site search is head to head with every other tenant broker in that trade area, so the ground matters more than the filter.","button":"Drop a circle where I'm looking","miles":3},{"kind":"narrow","title":"Keep what could be their site","do":"Keep the retail buildings and the land inside it, minus anything you are not allowed to touch.","why":"Start with everything that could physically work. The market has not filtered it for you yet, and the sites nobody is marketing are the ones the other brokers cannot see.","button":"Show me those","set":{"assets":["retail","land"],"know":["hideoff"]},"min":1,"relax":["wider","office"]},{"kind":"narrow","title":"Size it to the client","do":"Put in the building size the client needs, or skip this.","why":"A site that cannot hold the box is not a site. Where a county has not given us sizes yet the map says so, and skipping keeps the list honest.","button":"Apply the size","inputs":["sf"],"skippable":true,"min":1,"relax":["size","wider"]},{"kind":"cull","title":"Drop what does not fit","do":"Step through and drop what does not fit the client.","why":"You know the client. The map does not.","button":"Start stepping"},{"kind":"finish","title":"Do something with it","do":"The ones on the market are marked with the listing broker. The rest need a broker call to find out.","actions":[{"id":"clientcsv","label":"Send to the client's site map"},{"id":"sheet","label":"Broker call sheet to confirm availability"},{"id":"copy","label":"Copy the shortlist"}]}]},{"id":"buyer","icon":"\ud83c\udff7\ufe0f","title":"Find a building for a buyer","blurb":"Owner-user or investment. Starts wide on every commercial type so nothing is filtered out before you have looked.","listLabel":"buildings to show","base":{"know":["hideoff"]},"steps":[{"kind":"ground","title":"Where they will look","do":"Draw a circle around where the buyer will look.","why":"Buyers say a city and mean a drive time. The circle is the drive time.","button":"Drop a circle where I'm looking","miles":5},{"kind":"narrow","title":"What kind of building","do":"Pick the kinds of building to show them.","why":"Start wide. A buyer's yes often comes from the type they did not ask for.","button":"Show me those","chips":"assets","set":{"know":["hideoff"]},"min":1,"relax":["wider","types"]},{"kind":"narrow","title":"Size and money","do":"Put in a size range and a value range, or skip this.","why":"The assessor's value runs under the real price, and it still keeps the list inside the buyer's range for free.","button":"Apply it","inputs":["sf","val"],"skippable":true,"min":1,"relax":["size","value","wider"]},{"kind":"cull","title":"Drop what you would not show them","do":"Step through and drop what you would not put in front of them.","why":"Your reputation rides on what you show a buyer, not on how many.","button":"Start stepping"},{"kind":"finish","title":"Do something with it","do":"Turn the ones you kept into a shortlist.","actions":[{"id":"sheet","label":"Shortlist to take to them"},{"id":"copy","label":"Copy the shortlist"}]}]},{"id":"lookup","icon":"\u2753","title":"Look something up","blurb":"Who owns that, what sold nearby, how big is it. Search an address and read the card.","listLabel":"properties","base":{},"steps":[{"kind":"lookup","title":"Find it","do":"Type the address or the owner's name, then tap the pin.","why":"Who owns it, what it is, what it last sold for, in one card. It is the county's record, so it answers who owns it, never who to call.","button":"Search"},{"kind":"finish","title":"Then","do":"Everything on the card came from the county assessor.","actions":[{"id":"copy","label":"Copy the details"},{"id":"portfolio","label":"Everything this owner holds"},{"id":"nearby","label":"What sold nearby"}]}]},{"id":"farm","icon":"\ud83c\udf31","title":"Work a trade area","blurb":"Book building. Draw your farm and see how much of it you have actually touched, so coverage is a number instead of a feeling.","listLabel":"owners not yet touched","base":{"know":["hideoff"]},"steps":[{"kind":"ground","title":"Draw your farm","do":"Draw a circle around the ground you want to own.","why":"A farm is ground you can cover by name. Small enough to own, big enough to feed you.","button":"Drop a circle where I'm looking","miles":2},{"kind":"measure","title":"See your coverage","do":"This is how much of that ground you have actually touched.","why":"Book building becomes a number you can move instead of a feeling.","button":"Measure it"},{"kind":"narrow","title":"Who you have never touched","do":"Keep the retail owners in the farm you have never spoken to.","why":"Coverage only moves when a stranger becomes a name.","button":"Show me those","set":{"assets":["retail"],"know":["nospoken","hideoff","unlisted"]},"min":1,"relax":["office","wider"]},{"kind":"cull","title":"Pick this month's introductions","do":"Step through and keep the ones you will actually go meet.","why":"Ten real conversations a month owns a farm in a year.","button":"Start stepping"},{"kind":"finish","title":"Do something with it","do":"Turn the ones you kept into work.","actions":[{"id":"sheet","label":"Call sheet for this farm"},{"id":"handoff","label":"Hand it to Fox to check and stage"},{"id":"copy","label":"Copy the list"}]}]}];
 const HANDOFF = {"form":null,"fields":{"run":null,"name":null}};          // how a copy off the Mac hands a run over
+const BOOKMARKLETS = {"crexi":"javascript:%28async%20%28%29%20%3D%3E%20%7B%0A%20%20if%20%28%21%2Fcrexi%5C.com%24%2F.test%28location.hostname%29%29%20%7B%20alert%28%22Open%20crexi.com%20first%20%28signed%20in%29%2C%20then%20click%20this%20bookmark.%22%29%3B%20return%3B%20%7D%0A%20%20const%20PORT%20%3D%204186%3B%0A%20%20const%20hud%20%3D%20document.createElement%28%22div%22%29%3B%0A%20%20hud.style.cssText%20%3D%20%22position%3Afixed%3Btop%3A12px%3Bright%3A12px%3Bz-index%3A2147483647%3Bbackground%3A%231b2a4a%3Bcolor%3A%23fff%3Bpadding%3A10px%2014px%3Bborder-radius%3A12px%3Bfont%3A13px%20-apple-system%2CHelvetica%3Bbox-shadow%3A0%208px%2024px%20rgba%280%2C0%2C0%2C.3%29%22%3B%0A%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20pulling%20lease%20listings%E2%80%A6%22%3B%0A%20%20document.body.appendChild%28hud%29%3B%0A%20%20const%20sleep%20%3D%20ms%20%3D%3E%20new%20Promise%28r%20%3D%3E%20setTimeout%28r%2C%20ms%29%29%3B%0A%20%20const%20items%20%3D%20new%20Map%28%29%3B%20let%20cells%20%3D%200%2C%20errors%20%3D%200%3B%0A%20%20const%20search%20%3D%20async%20%28box%2C%20from%29%20%3D%3E%20%7B%0A%20%20%20%20const%20r%20%3D%20await%20fetch%28%22https%3A%2F%2Fapi.crexi.com%2Funiversal-search%2Fv2%2Fsearch%22%2C%20%7B%20method%3A%20%22POST%22%2C%20credentials%3A%20%22include%22%2C%0A%20%20%20%20%20%20headers%3A%20%7B%20%22Content-Type%22%3A%20%22application%2Fjson%22%2C%20%22Accept%22%3A%20%22application%2Fjson%22%20%7D%2C%0A%20%20%20%20%20%20body%3A%20JSON.stringify%28%7B%20boundingBox%3A%20box%2C%20filters%3A%20%7B%7D%2C%20searchTypes%3A%20%5B%22Lease%22%5D%2C%20from%2C%20size%3A%20100%2C%0A%20%20%20%20%20%20%20%20sorting%3A%20%7B%20%22searchAttributes.crexiSearchRank%22%3A%20%22Descending%22%20%7D%2C%20excludeFilters%3A%20%5B%5D%2C%20excludeSort%3A%20%5B%5D%2C%20ids%3A%20%5B%5D%20%7D%29%20%7D%29%3B%0A%20%20%20%20if%20%28%21r.ok%29%20throw%20new%20Error%28%22search%20%22%20%2B%20r.status%29%3B%0A%20%20%20%20return%20r.json%28%29%3B%0A%20%20%7D%3B%0A%20%20const%20pullCell%20%3D%20async%20%28box%2C%20depth%29%20%3D%3E%20%7B%0A%20%20%20%20let%20first%3B%0A%20%20%20%20try%20%7B%20first%20%3D%20await%20search%28box%2C%200%29%3B%20%7D%20catch%20%28e%29%20%7B%20errors%2B%2B%3B%20return%3B%20%7D%0A%20%20%20%20const%20total%20%3D%20first.totalCount%20%7C%7C%200%3B%20cells%2B%2B%3B%0A%20%20%20%20if%20%28total%20%3E%201200%20%26%26%20depth%20%3C%205%29%20%7B%0A%20%20%20%20%20%20const%20mlat%20%3D%20%28box.latitudeMin%20%2B%20box.latitudeMax%29%20%2F%202%2C%20mlng%20%3D%20%28box.longitudeMin%20%2B%20box.longitudeMax%29%20%2F%202%3B%0A%20%20%20%20%20%20for%20%28const%20q%20of%20%5B%5Bbox.latitudeMin%2C%20mlat%2C%20box.longitudeMin%2C%20mlng%5D%2C%20%5Bmlat%2C%20box.latitudeMax%2C%20box.longitudeMin%2C%20mlng%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5Bbox.latitudeMin%2C%20mlat%2C%20mlng%2C%20box.longitudeMax%5D%2C%20%5Bmlat%2C%20box.latitudeMax%2C%20mlng%2C%20box.longitudeMax%5D%5D%29%0A%20%20%20%20%20%20%20%20await%20pullCell%28%7B%20latitudeMin%3A%20q%5B0%5D%2C%20latitudeMax%3A%20q%5B1%5D%2C%20longitudeMin%3A%20q%5B2%5D%2C%20longitudeMax%3A%20q%5B3%5D%20%7D%2C%20depth%20%2B%201%29%3B%0A%20%20%20%20%20%20return%3B%0A%20%20%20%20%7D%0A%20%20%20%20let%20got%20%3D%20first.items%20%7C%7C%20%5B%5D%3B%0A%20%20%20%20for%20%28let%20from%20%3D%20100%3B%20from%20%3C%20total%3B%20from%20%2B%3D%20100%29%20%7B%0A%20%20%20%20%20%20await%20sleep%28250%29%3B%0A%20%20%20%20%20%20try%20%7B%20const%20r%20%3D%20await%20search%28box%2C%20from%29%3B%20got%20%3D%20got.concat%28r.items%20%7C%7C%20%5B%5D%29%3B%20%7D%20catch%20%28e%29%20%7B%20errors%2B%2B%3B%20%7D%0A%20%20%20%20%7D%0A%20%20%20%20for%20%28const%20it%20of%20got%29%20if%20%28it%20%26%26%20it.id%29%20items.set%28String%28it.id%29%2C%20it%29%3B%0A%20%20%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20%22%20%2B%20items.size%20%2B%20%22%20lease%20listings%20so%20far%20%28%22%20%2B%20cells%20%2B%20%22%20map%20cells%29%E2%80%A6%22%3B%0A%20%20%7D%3B%0A%20%20%2F%2F%20The%20Front%20Range%2C%20Pueblo%20to%20Fort%20Collins%2C%20in%20eight%20cells%3B%20a%20busy%20cell%20splits%20itself.%0A%20%20const%20rows%20%3D%20%5B%5B38.15%2C%2038.75%5D%2C%20%5B38.75%2C%2039.35%5D%2C%20%5B39.35%2C%2039.95%5D%2C%20%5B39.95%2C%2040.75%5D%5D%2C%20cols%20%3D%20%5B%5B-105.45%2C%20-104.95%5D%2C%20%5B-104.95%2C%20-104.35%5D%5D%3B%0A%20%20for%20%28const%20r%20of%20rows%29%20for%20%28const%20c%20of%20cols%29%20await%20pullCell%28%7B%20latitudeMin%3A%20r%5B0%5D%2C%20latitudeMax%3A%20r%5B1%5D%2C%20longitudeMin%3A%20c%5B0%5D%2C%20longitudeMax%3A%20c%5B1%5D%20%7D%2C%200%29%3B%0A%20%20if%20%28%21items.size%29%20%7B%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20nothing%20came%20back.%20Are%20you%20signed%20in%20to%20Crexi%3F%22%3B%20return%3B%20%7D%0A%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20handing%20%22%20%2B%20items.size%20%2B%20%22%20listings%20to%20the%20Mac%E2%80%A6%22%3B%0A%20%20const%20f%20%3D%20document.createElement%28%22form%22%29%3B%0A%20%20f.method%20%3D%20%22POST%22%3B%20f.action%20%3D%20%22http%3A%2F%2Flocalhost%3A%22%20%2B%20PORT%20%2B%20%22%2Fapi%2Flease-form%22%3B%20f.target%20%3D%20%22_blank%22%3B%20f.style.display%20%3D%20%22none%22%3B%0A%20%20const%20add%20%3D%20%28n%2C%20v%29%20%3D%3E%20%7B%20const%20i%20%3D%20document.createElement%28%22input%22%29%3B%20i.type%20%3D%20%22hidden%22%3B%20i.name%20%3D%20n%3B%20i.value%20%3D%20v%3B%20f.appendChild%28i%29%3B%20%7D%3B%0A%20%20add%28%22items%22%2C%20JSON.stringify%28%5B...items.values%28%29%5D%29%29%3B%20add%28%22source%22%2C%20%22crexi-lease%22%29%3B%20add%28%22complete%22%2C%20errors%20%3F%20%22false%22%20%3A%20%22true%22%29%3B%0A%20%20document.body.appendChild%28f%29%3B%20f.submit%28%29%3B%0A%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20%22%20%2B%20items.size%20%2B%20%22%20lease%20listings%20handed%20over%22%20%2B%20%28errors%20%3F%20%22%20%28%22%20%2B%20errors%20%2B%20%22%20cells%20failed%2C%20nothing%20marked%20gone%29%22%20%3A%20%22%22%29%20%2B%20%22.%20The%20next%20refresh%20ingests%20them.%22%3B%0A%7D%29%28%29%3B","marketplace":"javascript:%28async%20%28%29%20%3D%3E%20%7B%0A%20%20if%20%28%21%2Ffacebook%5C.com%24%2F.test%28location.hostname%29%20%7C%7C%20%21%2Fmarketplace%2F.test%28location.pathname%29%29%20%7B%0A%20%20%20%20alert%28%22Open%20a%20Facebook%20Marketplace%20search%20page%20first%2C%20then%20click%20this%20bookmark.%22%29%3B%20return%3B%0A%20%20%7D%0A%20%20const%20PORT%20%3D%204186%3B%0A%20%20const%20hud%20%3D%20document.createElement%28%22div%22%29%3B%0A%20%20hud.style.cssText%20%3D%20%22position%3Afixed%3Btop%3A12px%3Bright%3A12px%3Bz-index%3A2147483647%3Bbackground%3A%231b2a4a%3Bcolor%3A%23fff%3Bpadding%3A10px%2014px%3Bborder-radius%3A12px%3Bfont%3A13px%20-apple-system%2CHelvetica%3Bbox-shadow%3A0%208px%2024px%20rgba%280%2C0%2C0%2C.3%29%22%3B%0A%20%20document.body.appendChild%28hud%29%3B%0A%20%20const%20sleep%20%3D%20ms%20%3D%3E%20new%20Promise%28r%20%3D%3E%20setTimeout%28r%2C%20ms%29%29%3B%0A%20%20const%20items%20%3D%20new%20Map%28%29%3B%0A%20%20const%20read%20%3D%20%28%29%20%3D%3E%20%7B%0A%20%20%20%20document.querySelectorAll%28%27a%5Bhref%2A%3D%22%2Fmarketplace%2Fitem%2F%22%5D%27%29.forEach%28a%20%3D%3E%20%7B%0A%20%20%20%20%20%20const%20m%20%3D%20%2F%5C%2Fmarketplace%5C%2Fitem%5C%2F%28%5Cd%2B%29%2F.exec%28a.getAttribute%28%22href%22%29%20%7C%7C%20%22%22%29%3B%20if%20%28%21m%29%20return%3B%0A%20%20%20%20%20%20const%20lines%20%3D%20%28a.innerText%20%7C%7C%20%22%22%29.split%28%22%5Cn%22%29.map%28s%20%3D%3E%20s.trim%28%29%29.filter%28Boolean%29%3B%0A%20%20%20%20%20%20if%20%28%21lines.length%29%20return%3B%0A%20%20%20%20%20%20const%20price%20%3D%20lines.find%28s%20%3D%3E%20%2F%5E%5C%24%7C%5EFree%24%2Fi.test%28s%29%29%20%7C%7C%20%22%22%3B%0A%20%20%20%20%20%20const%20rest%20%3D%20lines.filter%28s%20%3D%3E%20s%20%21%3D%3D%20price%29%3B%0A%20%20%20%20%20%20const%20title%20%3D%20rest%5B0%5D%20%7C%7C%20%22%22%3B%20const%20location%20%3D%20rest.find%28s%20%3D%3E%20%2F%2C%5Cs%2A%5BA-Z%5D%7B2%7D%24%2F.test%28s%29%29%20%7C%7C%20rest%5B1%5D%20%7C%7C%20%22%22%3B%0A%20%20%20%20%20%20const%20img%20%3D%20a.querySelector%28%22img%22%29%3B%0A%20%20%20%20%20%20items.set%28m%5B1%5D%2C%20%7B%20id%3A%20m%5B1%5D%2C%20href%3A%20%22https%3A%2F%2Fwww.facebook.com%2Fmarketplace%2Fitem%2F%22%20%2B%20m%5B1%5D%20%2B%20%22%2F%22%2C%20title%2C%20price%2C%20location%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20text%3A%20lines.join%28%22%20%7C%20%22%29%2C%20img%3A%20img%20%3F%20img.currentSrc%20%7C%7C%20img.src%20%3A%20null%2C%20query%3A%20new%20URLSearchParams%28location.search%29.get%28%22query%22%29%20%7C%7C%20%22%22%20%7D%29%3B%0A%20%20%20%20%7D%29%3B%0A%20%20%7D%3B%0A%20%20for%20%28let%20i%20%3D%200%3B%20i%20%3C%206%3B%20i%2B%2B%29%20%7B%20read%28%29%3B%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20%22%20%2B%20items.size%20%2B%20%22%20Marketplace%20cards%20so%20far%E2%80%A6%22%3B%20window.scrollBy%280%2C%201800%29%3B%20await%20sleep%28900%29%3B%20%7D%0A%20%20read%28%29%3B%0A%20%20if%20%28%21items.size%29%20%7B%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20no%20listing%20cards%20on%20this%20page.%20Run%20a%20Marketplace%20search%20first.%22%3B%20return%3B%20%7D%0A%20%20const%20f%20%3D%20document.createElement%28%22form%22%29%3B%0A%20%20f.method%20%3D%20%22POST%22%3B%20f.action%20%3D%20%22http%3A%2F%2Flocalhost%3A%22%20%2B%20PORT%20%2B%20%22%2Fapi%2Flease-form%22%3B%20f.target%20%3D%20%22_blank%22%3B%20f.style.display%20%3D%20%22none%22%3B%0A%20%20const%20add%20%3D%20%28n%2C%20v%29%20%3D%3E%20%7B%20const%20i%20%3D%20document.createElement%28%22input%22%29%3B%20i.type%20%3D%20%22hidden%22%3B%20i.name%20%3D%20n%3B%20i.value%20%3D%20v%3B%20f.appendChild%28i%29%3B%20%7D%3B%0A%20%20add%28%22items%22%2C%20JSON.stringify%28%5B...items.values%28%29%5D%29%29%3B%20add%28%22source%22%2C%20%22marketplace%22%29%3B%20add%28%22complete%22%2C%20%22false%22%29%3B%0A%20%20document.body.appendChild%28f%29%3B%20f.submit%28%29%3B%0A%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20handed%20%22%20%2B%20items.size%20%2B%20%22%20Marketplace%20listings%20to%20the%20Mac.%20The%20next%20refresh%20ingests%20them.%22%3B%0A%7D%29%28%29%3B"};  // the Crexi lease pull and the Marketplace pull, as javascript: links (2026-09-18)
+const LAYERS = {"Denver":{"url":"https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/arcgis/rest/services/ODC_PROP_PARCELS_A/FeatureServer/245","key":"SCHEDNUM","id":"parcel"},"Arapahoe":{"url":"https://gis.arapahoegov.com/arcgis/rest/services/CountyFeatureService/FeatureServer/14","key":"PARCEL_ID","id":"parcel"},"Douglas":{"url":"https://services.arcgis.com/seTexOicoRXDvRsJ/arcgis/rest/services/Parcels_A_view/FeatureServer/0","key":"STATE_PARCEL_NO","id":"parcel"},"Weld":{"url":"https://services.arcgis.com/ewjSqmSyHJnkfBLL/arcgis/rest/services/Parcels_open_data/FeatureServer/0","key":"PARCEL","id":"parcel"},"Larimer":{"url":"https://maps1.larimer.org/arcgis/rest/services/MapServices/Parcels/MapServer/3","key":"PARCELNUM","id":"parcel"},"Boulder":{"url":"https://maps.bouldercounty.org/arcgis/rest/services/PARCELS/PARCELS_OWNER/FeatureServer/0","key":"ParcelNo","id":"parcel"},"Adams":{"url":"https://services3.arcgis.com/4PNQOtAivErR7nbT/arcgis/rest/services/Parcels/FeatureServer/0","key":"PIN","id":"parcel"},"Jefferson":{"url":"https://gisportal.jeffco.us/server2/rest/services/Parcel/FeatureServer/20","key":"PIN","id":"parcel"},"Broomfield":{"url":"https://services1.arcgis.com/vXSRPZbyyOmH9pek/arcgis/rest/services/Parcels/FeatureServer/0","key":"PARCELNUMBER","id":"parcel"}};             // county parcel layers, for the outline on the aerial (2026-09-18)
 const FOX_EMAIL = "fox@foxfrontrange.com";
 const DATA_BASE = "data/";
 const RENDER_CAP = 1400;   // pins drawn at once; the rest wait for a zoom
@@ -581,6 +657,14 @@ const S = {
   run: null,           // the guided run: {p, steps:[{spec,status,n,note,snap,vals}], i, name}
   tour: null,          // {i} while the walkthrough is on
   f: freshF(),
+  accounts: [],        // the deals record from foxhq-accounts.py (2026-09-18): one per deal, sites on the real status system
+  acct: null,          // the open account (its id), the map keyed to his own deal instead of the universe
+  acctThread: {}, acctGroup: {},
+  pick: null,          // {sel:{siteId:true}} while he is picking sites to present
+  know: {},            // pid -> what the vault knows (the overlay's know map)
+  sources: {},         // source -> {n, up, last}: how fresh each market source is
+  loose: [],           // Marketplace cards with no parcel to sit on (listed by city, never pinned)
+  byPid: {},           // pid -> {a, s}: the account site that sits on a parcel
 };
 function freshF(){
   return { assets:new Set(), know:new Set(), sfMin:null, sfMax:null, acMin:null, acMax:null,
@@ -695,7 +779,18 @@ async function loadOverlay(){
     const l = ov.lst[r[C.PID]]; if (l) r[C.LST] = l;
   }
   S.overlayBuilt = ov.built;
+  S.know = ov.know || {};
+  S.sources = ov.sources || {};
+  S.loose = ov.loose || [];
   return n;
+}
+async function loadAccounts(){
+  try {
+    const j = await loadGz("accounts.json.gz");
+    S.accounts = (j && j.accounts) || [];
+  } catch(e){ console.warn("accounts", e); S.accounts = []; S.accountsMissing = true; }
+  S.byPid = {};
+  for (const a of S.accounts) for (const s of (a.sites || [])) if (s.pid && !S.byPid[s.pid]) S.byPid[s.pid] = { a, s };
 }
 async function boot(){
   fetch("/api/health").then(r => r.ok ? r.json() : null).then(j => { S.mac = !!(j && j.ok); }).catch(() => { S.mac = false; });
@@ -707,11 +802,23 @@ async function boot(){
     $("#brandsub").textContent = `${fmt(S.rows.length)} properties · ${done}/${list.length} counties`;
   }
   try { await loadOverlay(); } catch(e){ console.warn("overlay", e); }
+  await loadAccounts();
   $("#brandsub").textContent = `${fmt(S.rows.length)} commercial properties · ${Object.keys(S.counties).length} counties`;
   buildFilters();
+  renderHome();
   renderRun();
   apply();
-  if (!S.purpose) openSheet();
+  routeHash();
+  window.addEventListener("hashchange", routeHash);
+}
+/* Opens as a real map (Andrew, 2026-09-18: "I hated that I was forced to pick between four different options").
+   #deal/<id> opens his deal; #p/<pid> opens a property card; a play is a shortcut he reaches for. */
+function routeHash(){
+  const h = location.hash.replace(/^#/, "");
+  let m;
+  if ((m = /^deal\/([\w-]+)/.exec(h))){ if (S.accounts.some(a => a.id === m[1])) openAccount(m[1]); return; }
+  if ((m = /^p\/(.+)$/.exec(h))){ const pid = decodeURIComponent(m[1]); const r = S.rows.find(x => x[C.PID] === pid); if (r){ map.setView([r[C.LAT], r[C.LNG]], 16, { animate:false }); showDetail(r); } return; }
+  if (h === "plays") openSheet();
 }
 
 /* ---------------- filtering ---------------- */
@@ -729,6 +836,7 @@ function inGround(r, f, radius){
 }
 function matches(r, f = S.f, radius = S.radius, q = S.q){
   const fl = r[C.FLAGS];
+  if (S.acct) return false;                   // in the account view the deal's own sites are the pins (draw()), not the parcels
   if (!inGround(r, f, radius)) return false;
   if (S.portfolio != null){
     if ((S.counties[r.__c].owners[r[C.OWNER]] || "") !== S.portfolio) return false;
@@ -784,11 +892,12 @@ function apply(){ clearTimeout(applyTimer); applyTimer = setTimeout(applyNow, 16
 function applyNow(){
   S.filtered = S.rows.filter(r => matches(r));
   draw();
-  const n = S.filtered.length;
+  let n = S.filtered.length, word = n === 1 ? "property" : "properties";
+  if (S.acct){ const a = acctById(S.acct); n = a ? sitesOf(a).filter(s => s.lat != null).length : 0; word = n === 1 ? "site on the map" : "sites on the map"; }
   const cnt = $("#count");
   if (!cnt.querySelector(".num")) cnt.innerHTML = `<span class="tnum num" data-v="0">0</span><span class="dim"></span>`;
   animateNum(cnt.querySelector(".num"), n);
-  cnt.querySelector(".dim").textContent = n === 1 ? "property" : "properties";
+  cnt.querySelector(".dim").textContent = word;
   document.querySelectorAll(".fg").forEach(g => {
     const on = g.querySelector('[aria-pressed="true"]') ||
                [...g.querySelectorAll("input")].some(i => i.value !== "");
@@ -813,14 +922,32 @@ function draw(){
   const rad = z >= 16 ? 7 : z >= 14 ? 5.5 : z >= 12 ? 4 : 3;
   for (const r of inView){
     const listed = r[C.FLAGS] & F.LISTED, dark = r[C.FLAGS] & F.DARK;
-    const m = L.circleMarker([r[C.LAT], r[C.LNG]], {
-      renderer:canvas, radius: listed ? rad + 1.5 : rad, weight: listed ? 2.2 : (dark ? 2 : 1.2),
-      color: listed ? "#8a1f2d" : (dark ? "#111827" : "#fff"),
-      fillColor:pinColor(r), fillOpacity:.92, opacity: listed ? 1 : .85,
-    });
+    const hit = S.byPid[r[C.PID]], lst = listed ? listingOf(r) : null, mk = !!(lst && lst.src === "marketplace");
+    let opt;
+    if (mk){
+      // owner-posted and unverified: drawn apart from the Crexi and LoopNet listings (Andrew: "probably separated somehow")
+      opt = { renderer:canvas, radius: rad + 1.5, weight: 2, color: "#8a1f2d", dashArray: "2 3", fillColor: "#ffffff", fillOpacity: .9, opacity: 1 };
+    } else {
+      opt = { renderer:canvas, radius: listed ? rad + 1.5 : rad, weight: listed ? 2.2 : (dark ? 2 : 1.2),
+              color: listed ? "#8a1f2d" : (dark ? "#111827" : "#fff"), fillColor:pinColor(r), fillOpacity:.92, opacity: listed ? 1 : .85 };
+    }
+    const m = L.circleMarker([r[C.LAT], r[C.LNG]], opt);
     m.__r = r;
     m.on("click", () => showDetail(r));
     layer.addLayer(m);
+  }
+  if (S.acct){
+    // his deal's sites, from the deal's own record: the real status colour, hollow for a site identified but not on
+    // the client's sheet yet. A site with no sourced coordinate has no pin; it is in the list marked "no pin".
+    const a = acctById(S.acct);
+    for (const s of (a ? sitesOf(a) : [])){
+      if (s.lat == null || s.lng == null) continue;
+      const st = s.status;
+      const m = L.circleMarker([s.lat, s.lng], { renderer:canvas, radius: rad + 4, weight: st.hollow ? 2.2 : 2, color: st.hollow ? "#1b2a4a" : "#fff",
+        dashArray: st.hollow ? "3 3" : null, fillColor: st.hollow ? "#ffffff" : st.color, fillOpacity: st.hollow ? .6 : .95, opacity: 1 });
+      m.on("click", () => { const r = s.pid ? S.rows.find(x => x[C.PID] === s.pid) : null; if (r) showDetail(r); else showSite(a, s); renderAcct(); });
+      layer.addLayer(m);
+    }
   }
   const hud = $("#hud");
   if (over){
@@ -947,10 +1074,22 @@ function showDetail(r){
   if (fl & F.LISTED)    tags.push('<span class="tag m">On the market</span>');
   if (fl & F.DARK)      tags.push('<span class="tag g">Went dark</span>');
   const lst = listingOf(r);
-  const marketSec = lst ? `<div class="dsec"><h4>${(fl & F.LISTED) ? "On the market" : "Was on the market"}</h4>
+  const mk = !!(lst && lst.src === "marketplace");
+  if (mk) tags.push('<span class="tag mk">Marketplace, owner-posted</span>');
+  const srcWord = lst ? ({ "crexi-sale":"Crexi", "crexi-lease":"Crexi", "crexi-lease-alert":"a Crexi alert email", "loopnet":"LoopNet", "showcase":"the LoopNet inventory (Showcase)", "marketplace":"Facebook Marketplace" }[lst.src] || lst.src || "") : "";
+  const marketSec = lst ? `<div class="dsec ${mk ? "mk" : ""}"><h4>${(fl & F.LISTED) ? (mk ? "Posted on Marketplace" : "On the market") : "Was on the market"}</h4>
       <div style="font-size:12.5px;font-weight:600;line-height:1.4">${esc(listingLine(lst))}${lst.g ? ` · came down ${esc(lst.g)}` : ""}</div>
-      ${lst.u ? `<div class="note" style="margin-top:4px"><a href="${esc(lst.u)}" target="_blank" rel="noopener" style="color:var(--yours);font-weight:600">Open the listing</a></div>` : ""}
-      ${(fl & F.LISTED) ? '<div class="note" style="margin-top:5px">Another broker holds this. Intro or co-op only, never a pitch to the owner.</div>' : '<div class="note" style="margin-top:5px">A listing that came down and did not sell is the warmest cold call there is.</div>'}
+      ${lst.u ? `<div class="note" style="margin-top:4px"><a href="${esc(lst.u)}" target="_blank" rel="noopener" style="color:var(--yours);font-weight:600">Open the listing</a>${srcWord ? ` <span class="src">· ${esc(srcWord)}</span>` : ""}</div>` : ""}
+      ${mk ? '<div class="note" style="margin-top:5px">Posted by the owner or someone acting for them, unverified. Warm, not cold: they already raised a hand.</div>' : (fl & F.LISTED) ? '<div class="note" style="margin-top:5px">Another broker holds this. Intro or co-op only, never a pitch to the owner.</div>' : '<div class="note" style="margin-top:5px">A listing that came down and did not sell is the warmest cold call there is.</div>'}
+    </div>` : "";
+  const photo = lst && lst.i ? `<img class="photo" src="${esc(lst.i)}" alt="" loading="lazy" onerror="this.remove()">` : "";
+  const hit = S.byPid[r[C.PID]];
+  const acctSec = hit ? acctSection(hit.a, hit.s) : "";
+  const kn = S.know[r[C.PID]];
+  const knowSec = kn ? `<div class="dsec known"><h4>What you know</h4>
+      ${kn.n ? kv("On file as", kn.n) : ""}${kn.ls ? kv("Status on file", kn.ls) : ""}${kn.co ? kv("Owner is", kn.co + (kn.t ? " (tier " + kn.t + ")" : "")) : ""}
+      ${kn.c && kn.c.length ? kv("You know", kn.c.join(", ")) : ""}${kn.l ? kv("Last spoke", kn.l) : ""}${kn.d && kn.d.length ? kv("On deals", kn.d.join(", ")) : ""}
+      ${kn.x ? `<div class="note" style="color:var(--accent);font-weight:650;margin-top:4px">Off limits: ${esc(kn.x)}</div>` : ""}
     </div>` : "";
   const sale = r[C.SALED] ? `${r[C.SALED]}${r[C.SALEP] ? " · " + money(r[C.SALEP]) : ""}` : null;
   const held = saleYear(r) != null ? `${YEAR - saleYear(r)} years (since ${saleYear(r)})` : null;
@@ -958,8 +1097,11 @@ function showDetail(r){
   const inList = S.list && S.list.items.find(i => i.r[C.PID] === r[C.PID]);
 
   $("#dbody").innerHTML = `
+    ${photo}
+    ${acctSec}
     ${tags.length ? `<div class="dsec known">${tags.join("")}
       ${(fl & F.OUT_STATE) ? '<div class="note">Owner mails out of state.</div>' : ""}</div>` : ""}
+    ${knowSec}
     ${marketSec}
     <div class="dsec"><h4>Owner of record</h4>
       <div class="own">${esc(t.owners[r[C.OWNER]] || "not on file")}</div>
@@ -978,8 +1120,10 @@ function showDetail(r){
       ${kv("Last sale", sale)}
       ${kv("Held", held, "no sale on record")}
     </div>
+    <div class="dsec"><h4>Aerial</h4><div class="mini" id="mini"></div><div class="note" style="margin-top:4px" id="mininote">The parcel, outlined on the county's own imagery layer where the county publishes one.</div></div>
     <div class="dsec"><h4>Do</h4><div id="dacts"></div></div>
   `;
+  miniAerial(r);
   const acts = $("#dacts");
   acts.innerHTML =
     (inList ? `<button class="act ${inList.kept ? "ghost" : ""}" data-a="keep">${inList.kept ? "⊘ Drop it from the list" : "✓ Keep it"}</button>`
@@ -987,6 +1131,7 @@ function showDetail(r){
     `<button class="act ghost" data-a="portfolio">⌂ Everything this owner holds</button>` +
     `<button class="act ghost" data-a="nearby">◎ What sold nearby</button>` +
     `<button class="act ghost" data-a="copy">⧉ Copy the details</button>`;
+  wireSiteActs(hit ? hit.a : null, hit ? hit.s : null, r);
   acts.onclick = e => {
     const b = e.target.closest("[data-a]"); if (!b) return;
     if (b.dataset.a === "addlist") addToList([r]);
@@ -996,11 +1141,39 @@ function showDetail(r){
     if (b.dataset.a === "nearby") showNearby(r);
   };
   $("#detail").classList.add("show");
+  try { if (!S.acct) history.replaceState(null, "", "#p/" + encodeURIComponent(r[C.PID])); } catch(e){}
   if (S.run && cur()?.spec.kind === "lookup" && cur().status === "cur"){
     completeStep(1, r[C.SITUS] || "found");
   }
+  if (S.acct) renderAcct();
 }
-$("#dclose").onclick = () => { $("#detail").classList.remove("show"); S.sel = null; };
+$("#dclose").onclick = () => { $("#detail").classList.remove("show"); S.sel = null; if (S.acct) renderAcct(); };
+/* The aerial with the parcel outlined (2026-09-18): the county's own parcel layer answers a geometry query for
+   this parcel number; Esri imagery underneath. A county with no public layer, or a query that fails, shows the
+   imagery centred on the pin and says so. Never a drawn guess. */
+let miniMap = null;
+function miniAerial(r){
+  const el = $("#mini"); if (!el) return;
+  if (miniMap){ try { miniMap.remove(); } catch(e){} miniMap = null; }
+  miniMap = L.map(el, { zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false, doubleClickZoom:false, boxZoom:false, keyboard:false, touchZoom:false });
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom:19 }).addTo(miniMap);
+  miniMap.setView([r[C.LAT], r[C.LNG]], 17);
+  L.circleMarker([r[C.LAT], r[C.LNG]], { radius:5, color:"#fff", weight:2, fillColor:"#b8933a", fillOpacity:1 }).addTo(miniMap);
+  const note = $("#mininote");
+  const lay = LAYERS[r.__c];
+  const key = String(r[C.PID]).split("|")[1] || "";
+  if (!lay || !lay.url || !key || key.startsWith("situs:")){ if (note) note.textContent = "The county publishes no parcel outline this map can read; this is the imagery centred on the pin."; return; }
+  const where = `${lay.key}='${key.replace(/'/g, "''")}'`;
+  const url = `${lay.url.replace(/\/$/, "")}/query?where=${encodeURIComponent(where)}&outFields=${encodeURIComponent(lay.key)}&returnGeometry=true&outSR=4326&geometryPrecision=6&f=json`;
+  fetch(url).then(x => x.ok ? x.json() : null).then(j => {
+    const g = j && j.features && j.features[0] && j.features[0].geometry;
+    if (!g || !g.rings || !miniMap){ if (note) note.textContent = "The county's layer did not return this parcel's outline; this is the imagery centred on the pin."; return; }
+    const rings = g.rings.map(ring => ring.map(p => [p[1], p[0]]));
+    const poly = L.polygon(rings, { color:"#b8933a", weight:2.5, fillColor:"#b8933a", fillOpacity:.12 }).addTo(miniMap);
+    miniMap.fitBounds(poly.getBounds(), { padding:[14, 14], maxZoom:19 });
+    if (note) note.textContent = `The parcel outline, from ${r.__c} County's own layer.`;
+  }).catch(() => { if (note) note.textContent = "The county's layer did not answer; this is the imagery centred on the pin."; });
+}
 
 function copyDetail(r){
   const t = S.counties[r.__c];
@@ -1086,7 +1259,7 @@ function renderList(){
                    tb.cities[r[C.CITY]] ].filter(Boolean).join(" · ");
     return `<div class="row ${i===S.list.cur?"cur":""} ${it.kept?"":"drop"}" data-i="${i}">
       <span class="tick">${it.kept ? "✓" : ""}</span>
-      <span class="tx"><span class="ad">${esc(r[C.SITUS] || "(no address)")}${(r[C.FLAGS] & F.LISTED) ? '<span class="lb">Listed</span>' : (r[C.FLAGS] & F.DARK) ? '<span class="lb" style="background:rgba(17,24,39,.1);color:#374151">Went dark</span>' : ""}</span><span class="mt">${esc(meta)}</span></span>
+      <span class="tx"><span class="ad">${esc(r[C.SITUS] || "(no address)")}${(r[C.FLAGS] & F.LISTED) ? ((listingOf(r) || {}).src === "marketplace" ? '<span class="lb" style="border:1px dashed rgba(138,31,45,.5);background:none">Marketplace</span>' : '<span class="lb">Listed</span>') : (r[C.FLAGS] & F.DARK) ? '<span class="lb" style="background:rgba(17,24,39,.1);color:#374151">Went dark</span>' : ""}</span><span class="mt">${esc(meta)}</span></span>
       <button class="kd" data-kd="${i}" aria-label="${it.kept ? "Drop" : "Keep"}">${it.kept ? "Drop" : "Keep"}</button></div>`;
   }).join("");
   $("#rows").innerHTML = t || `<div style="padding:22px 14px;color:var(--faint);font-size:12.5px">Nothing here yet.</div>`;
@@ -1282,11 +1455,254 @@ $("#purposebtn").onclick = openSheet;
 $("#tourbtn").onclick = () => { $("#scrim").classList.remove("show"); startTour(); };
 
 function setPurpose(p){
+  if (S.acct) closeAccount(false);
   S.purpose = p;
   $("#pval").textContent = p.title;
   $("#pic").textContent = p.icon;
   endTour(false);
   startRun(p);
+}
+
+
+/* ================= YOUR DEALS FIRST (2026-09-18) =================
+   The sidebar opens on Andrew's own deals, not on a universe of strangers. Each row is an account from
+   foxhq-accounts.py; tapping one keys the map to that deal's sites, colour-coded to the real status system
+   (Mark Austin's stages for Port of Subs, the tracker's for a listing). The plays stay as shortcuts. */
+function acctById(id){ return S.accounts.find(a => a.id === id) || null; }
+function stageOf(a, k){ return ((a.statusSystem && a.statusSystem.stages) || []).find(s => s.k === k) || { color:"#7b8694", short:k, t:k }; }
+function liveSite(s){ return s.status.group !== "dead" && s.status.group !== "won"; }
+function sitesOf(a){
+  const th = S.acctThread[a.id] || "all", g = S.acctGroup[a.id] || "live";
+  return (a.sites || []).filter(s => (th === "all" || s.thread === th) && (g === "all" ? true : g === "live" ? liveSite(s) : s.status.group === g));
+}
+function siteWord(a, n){ const w = (a.kind === "listing" || a.kind === "sale") ? "prospect" : "site"; return n === 1 ? w : w + "s"; }
+function renderHome(){
+  const el = $("#home"); if (!el) return;
+  const accs = S.accounts.filter(a => (a.sites || []).length || (a.suggested || []).length || a.counts && a.counts.needs);
+  const rows = accs.map(a => {
+    const by = (a.counts && a.counts.byStatus) || {};
+    const strip = ((a.statusSystem && a.statusSystem.stages) || []).filter(s => by[s.k]).slice(0, 5)
+      .map(s => `<i style="background:${s.hollow ? "none" : s.color};${s.hollow ? "border:1px dashed var(--navy)" : ""}"></i>`).join("");
+    const line = [a.side, a.counts && a.counts.sites ? `${a.counts.sites} ${siteWord(a, a.counts.sites)}` : null,
+                  a.counts && a.counts.suggested ? `${a.counts.suggested} more fit` : null].filter(Boolean).join(" · ");
+    const n = a.counts && a.counts.needs ? `<span class="n hot">${a.counts.needs}</span>` : `<span class="n">${(a.sites||[]).filter(liveSite).length || ""}</span>`;
+    return `<button class="deal" data-acct="${esc(a.id)}"><span class="strip">${strip || '<i style="background:var(--hair)"></i>'}</span><span class="tx"><b>${esc(a.title)}</b><span>${esc(line)}</span></span>${n}</button>`;
+  }).join("");
+  const others = S.accounts.filter(a => !accs.includes(a));
+  el.innerHTML = `
+    <h3>Your deals <span style="font-weight:500;text-transform:none;letter-spacing:0">${S.accounts.length ? "tap one to see everything on it" : ""}</span></h3>
+    ${rows || (S.accountsMissing ? `<div class="hint warn">The deals record did not load with this copy of the map. The next refresh writes it.</div>` : `<div class="hint">No live deals on file.</div>`)}
+    ${others.length ? `<div class="hint">Also live, nothing on the map yet: ${esc(others.map(a => a.title).join(", "))}.</div>` : ""}
+    <h3>Plays</h3>
+    <div class="plays">${PURPOSES.map(p => `<button class="play" data-play="${p.id}"><span class="ic">${p.icon}</span>${esc(p.title)}</button>`).join("")}</div>
+    <div id="srcs">${sourcesHTML()}</div>`;
+}
+const SRC_WORDS = { "crexi-sale":"Crexi for sale", "crexi-lease":"Crexi for lease (your Chrome)", "crexi-lease-alert":"Crexi lease, from the alert emails",
+                    "loopnet":"LoopNet (your Chrome)", "showcase":"LoopNet inventory (Showcase, on its own)", "marketplace":"Facebook Marketplace (owner-posted)" };
+function daysAgo(d){ if (!d) return null; return Math.round((Date.now() - Date.parse(d + "T12:00:00")) / 86400e3); }
+function sourcesHTML(){
+  const order = ["crexi-sale", "crexi-lease", "crexi-lease-alert", "showcase", "loopnet", "marketplace"];
+  const limits = { "crexi-sale":2, "crexi-lease":7, "showcase":10, "loopnet":14 };
+  const lines = order.filter(k => S.sources[k]).map(k => {
+    const s = S.sources[k], n = daysAgo(s.last), stale = limits[k] != null && n != null && n > limits[k];
+    return `<div><b>${esc(SRC_WORDS[k] || k)}</b> · ${fmt(s.up || 0)} up · ${n == null ? "no pull yet" : n === 0 ? "today" : n === 1 ? "yesterday" : `<span class="${stale ? "stale" : ""}">${n} days ago</span>`}</div>`;
+  }).join("");
+  const loose = S.loose.length ? `<div>${S.loose.length} Marketplace ${plural(S.loose.length, "card")} with no exact location, listed under their city only.</div>` : "";
+  const bk = BOOKMARKLETS && BOOKMARKLETS.crexi ? `<div class="how">Crexi's lease inventory answers only inside your own signed-in Chrome, so it is one click of yours: drag this to the bookmarks bar once, then click it on crexi.com about once a week. Same for Marketplace, on a Marketplace search page. The Mac's Fox Atlas server has to be running.</div>
+    <a class="bk" href="${escAttr(BOOKMARKLETS.crexi)}" title="Drag me to the bookmarks bar">Crexi lease → Fox Atlas</a><a class="bk" href="${escAttr(BOOKMARKLETS.marketplace || "#")}" title="Drag me to the bookmarks bar">Marketplace → Fox Atlas</a>` : "";
+  return `<h3 style="margin-top:0">Where the listings come from</h3>${lines || "<div>No market pull on file yet.</div>"}${loose}${bk}`;
+}
+function escAttr(s){ return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;"); }
+$("#home").addEventListener("click", e => {
+  const d = e.target.closest("[data-acct]"); if (d){ openAccount(d.dataset.acct); return; }
+  const p = e.target.closest("[data-play]"); if (p){ closeAccount(false); setPurpose(PURPOSES.find(x => x.id === p.dataset.play)); return; }
+});
+
+/* ================= THE ACCOUNT VIEW ================= */
+function showPane(which){
+  $("#home").hidden = which !== "home"; $("#acct").hidden = which !== "acct"; $("#runbody").hidden = which !== "run";
+}
+function openAccount(id){
+  const a = acctById(id); if (!a) return;
+  if (S.run){ S.run = null; S.purpose = null; $("#pval").textContent = "Chase listings, find sites, look something up…"; S.f = freshF(); setRadius(null); syncFilterUI(); }
+  S.acct = id; S.pick = null; S.list = null; $("#list").classList.remove("show");
+  showPane("acct"); renderAcct(); applyNow();
+  const pts = (a.sites || []).filter(s => s.lat != null && liveSite(s)).map(s => [s.lat, s.lng]);
+  const all = (a.sites || []).filter(s => s.lat != null).map(s => [s.lat, s.lng]);
+  const fit = pts.length >= 2 ? pts : all;
+  if (fit.length >= 2) map.fitBounds(fit, { padding:[40, 40], maxZoom:13, animate:!REDUCED });
+  else if (fit.length === 1) map.setView(fit[0], 14, { animate:!REDUCED });
+  try { history.replaceState(null, "", "#deal/" + id); } catch(e){}
+  if (PHONE()) openSide(true);
+  renderPeek();
+}
+function closeAccount(pan){
+  S.acct = null; S.pick = null; showPane(S.run ? "run" : "home"); applyNow();
+  try { if (/^#deal/.test(location.hash)) history.replaceState(null, "", "#"); } catch(e){}
+  renderPeek();
+}
+function renderAcct(){
+  const a = acctById(S.acct); const el = $("#acct"); if (!a || !el) return;
+  const th = S.acctThread[a.id] || "all", g = S.acctGroup[a.id] || "live";
+  const sites = a.sites || [], inT = sites.filter(s => th === "all" || s.thread === th);
+  const live = inT.filter(liveSite).length, dead = inT.filter(s => s.status.group === "dead").length, won = inT.filter(s => s.status.group === "won").length;
+  const shown = sitesOf(a), used = new Set(shown.map(s => s.status.k));
+  const threads = (a.threads || []).length ? `<div class="thchips"><button class="chip" data-th="all" aria-pressed="${th === "all"}">All <span class="n">${sites.filter(liveSite).length}</span></button>${a.threads.map(x => `<button class="chip" data-th="${esc(x.k)}" aria-pressed="${th === x.k}">${esc(x.t)} <span class="n">${x.n || 0}</span></button>`).join("")}</div>` : "";
+  const groups = `<div class="gchips"><button class="chip" data-g="live" aria-pressed="${g === "live"}">In play ${live}</button>${won ? `<button class="chip" data-g="won" aria-pressed="${g === "won"}">Won ${won}</button>` : ""}${dead ? `<button class="chip" data-g="dead" aria-pressed="${g === "dead"}">Dead or passed ${dead}</button>` : ""}<button class="chip" data-g="all" aria-pressed="${g === "all"}">All ${inT.length}</button></div>`;
+  const legend = `<div class="lg">${((a.statusSystem && a.statusSystem.stages) || []).filter(s => used.has(s.k)).map(s => `<span><i class="${s.hollow ? "hollow" : ""}" style="background:${s.hollow ? "none" : s.color}"></i>${esc(s.t)}</span>`).join("")}</div>`;
+  const pick = S.pick;
+  const rows = shown.map(s => {
+    const on = pick && pick.sel[s.id];
+    const thn = s.thread && a.threads ? (a.threads.find(x => x.k === s.thread) || {}).t : "";
+    const sub = s.courtLine || s.kind || s.last || s.statusBasis || "";
+    return `<button class="site ${S.sel && s.pid && S.sel[C.PID] === s.pid ? "cur" : ""} ${on ? "on" : ""}" data-site="${esc(s.id)}">
+      ${pick ? `<span class="ck">${on ? "✓" : ""}</span>` : `<span class="dot ${s.status.hollow ? "hollow" : ""}" style="background:${s.status.hollow ? "none" : s.status.color}"></span>`}
+      <span class="tx"><b>${thn ? `<span class="th">${esc(thn)}</span>` : ""}${esc(s.name)}${s.lat == null ? ' <span class="th" style="background:var(--yours-soft);color:var(--yours)">no pin</span>' : ""}${s.queued ? ' <span class="th" style="background:var(--green-soft);color:var(--green)">queued</span>' : ""}</b><span>${esc(sub)}</span></span>
+      <span class="st ${s.status.hollow ? "hollow" : ""}" style="background:${s.status.hollow ? "none" : s.status.color}">${esc(s.status.short)}</span></button>`;
+  }).join("");
+  const sug = (a.suggested || []).map(s => `<div class="sugrow"><b>${esc(s.address || s.name)}${s.city ? ", " + esc(s.city) : ""}${s.thread && s.thread !== "open" && a.threads ? ` <span class="th">${esc((a.threads.find(x => x.k === s.thread) || {}).t || s.thread)}</span>` : ""}</b><span>${esc(s.why || "")}${s.source ? " · " + esc(s.source) : ""}</span>
+      <div class="acts"><button class="pri" data-sugadd="${esc(s.id)}">Add to the list</button>${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">Open the listing</a>` : ""}${s.lat != null ? `<button data-suggo="${esc(s.id)}">Show me</button>` : ""}</div></div>`).join("");
+  const n = pick ? Object.keys(pick.sel).filter(k => pick.sel[k]).length : 0;
+  const tenant = a.kind === "tenant" || a.kind === "buyer";
+  el.innerHTML = `<button class="backlink" data-back="1">‹ Your deals</button>
+    <div class="acct-head">${a.logo ? `<img src="${a.logo}" alt="">` : ""}<div><div class="t">${esc(a.title)}</div><div class="k">${esc(a.side)}${a.client && a.client.contact ? " · " + esc(a.client.contact) : ""}${a.courtLine ? " · " + esc(a.courtLine) : ""}</div></div></div>
+    ${a.counts && a.counts.needs ? `<div class="hint warn" style="margin:0 2px 6px">${a.counts.needs} ${plural(a.counts.needs, "card")} need${a.counts.needs === 1 ? "s" : ""} you on Fox HQ for this deal.</div>` : ""}
+    ${a.sheetError ? `<div class="hint warn" style="margin:0 2px 6px">${esc(a.sheetError)}</div>` : ""}
+    ${sites.length ? `<h3>${tenant ? "The sites" : "The prospects"} · ${sites.length}</h3>${threads}${groups}${legend}${rows || '<div class="hint">Nothing on this filter.</div>'}` : `<div class="hint">Nothing on the map for this deal yet.</div>`}
+    ${tenant && sites.length && !pick ? `<button class="alt" data-pickstart="1" style="text-align:left;padding-left:2px">Present some of these to ${esc((a.client || {}).name || "the client")} ›</button>` : ""}
+    ${pick ? `<div class="pbar"><span>${n ? `${n} picked` : "Tap the sites to present"}</span><span style="display:flex;gap:6px"><button data-pickcancel="1">Cancel</button><button class="go" data-pickgo="1" ${n ? "" : "disabled"}>Present ${n || ""}</button></span></div>` : ""}
+    ${(a.suggested || []).length ? `<h3>Also fits ${esc((a.client || {}).name || "the client")} · ${a.suggested.length}</h3><div class="hint" style="margin:0 2px 8px">On the market now, matched against ${esc((a.criteria || {}).line || "the brief")}, not on the list yet. The broker call is still the check.</div>${sug}` : (a.criteriaNote ? `<div class="hint" style="margin:8px 2px">${esc(a.criteriaNote)}</div>` : "")}
+    <div class="hint" style="margin:12px 2px 0">${esc((a.statusSystem || {}).name || "")}. From ${esc(a.source || "the records")}.${a.hqUrl ? ` <a href="${esc(a.hqUrl)}" target="_blank" rel="noopener" style="color:var(--yours);font-weight:600">Open in Fox HQ ›</a>` : ""}</div>`;
+}
+$("#acct").addEventListener("click", e => {
+  const a = acctById(S.acct); if (!a) return;
+  if (e.target.closest("[data-back]")){ closeAccount(true); return; }
+  const th = e.target.closest("[data-th]"); if (th){ S.acctThread[a.id] = th.dataset.th; renderAcct(); applyNow(); return; }
+  const g = e.target.closest("[data-g]"); if (g){ S.acctGroup[a.id] = g.dataset.g; renderAcct(); applyNow(); return; }
+  if (e.target.closest("[data-pickstart]")){ S.pick = { sel:{} }; renderAcct(); flash("Tap the sites to present"); return; }
+  if (e.target.closest("[data-pickcancel]")){ S.pick = null; renderAcct(); return; }
+  if (e.target.closest("[data-pickgo]")){ presentPicked(a); return; }
+  const sa = e.target.closest("[data-sugadd]"); if (sa){ const s = (a.suggested || []).find(x => x.id === sa.dataset.sugadd); if (s) ask("add", a, null, s); return; }
+  const sg = e.target.closest("[data-suggo]"); if (sg){ const s = (a.suggested || []).find(x => x.id === sg.dataset.suggo); if (s && s.lat != null){ map.setView([s.lat, s.lng], 16, { animate:!REDUCED }); const r = s.pid ? S.rows.find(x => x[C.PID] === s.pid) : null; if (r) showDetail(r); if (PHONE()) openSide(false); } return; }
+  const st = e.target.closest("[data-site]"); if (st){
+    const s = (a.sites || []).find(x => x.id === st.dataset.site); if (!s) return;
+    if (S.pick){ S.pick.sel[s.id] = !S.pick.sel[s.id]; renderAcct(); return; }
+    if (s.lat != null) map.setView([s.lat, s.lng], Math.max(map.getZoom(), 15), { animate:!REDUCED });
+    const r = s.pid ? S.rows.find(x => x[C.PID] === s.pid) : null;
+    if (r) showDetail(r); else showSite(a, s);
+    if (PHONE()) openSide(false);
+    renderAcct();
+  }
+});
+
+/* The asks (2026-09-18): present these sites, ask the listing broker, add a site to a deal, prospect one owner. On the
+   Mac they land as a file the hourly Fox HQ pickup reads; off the Mac they go as an email Andrew sends himself, the same
+   lane a run uses. Either way the result is a card on Fox HQ for his Approve, never a send from here. */
+async function ask(kind, a, site, sug, note){
+  const payload = { kind, dealId: a ? a.id : null, deal: a ? a.name : null, who: site ? site.name : sug ? (sug.address || sug.name) : "",
+    site: site ? { id: site.id, name: site.name, address: site.address || "", city: site.city || "", thread: site.thread || "", person: site.person || "", email: site.email || "", phone: site.phone || "", pid: site.pid || null } : null,
+    suggestion: sug ? { id: sug.id, lid: sug.lid || "", address: sug.address || "", city: sug.city || "", url: sug.url || "", thread: sug.thread || "", pid: sug.pid || null } : null,
+    note: note || "", created: new Date().toISOString() };
+  if (sug) sug.pend = kind; if (site) site.pend = kind;
+  if (S.mac){
+    let res = null;
+    try { res = await fetch("/api/ask", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload) }); } catch(e){ res = null; }
+    if (res && res.ok){ flash(kind === "present" ? "Queued to present. The email comes back on Fox HQ for your Approve." : kind === "broker" ? "Queued. A draft comes back on Fox HQ for your Approve." : kind === "add" ? "Added to the list at the next pickup." : "Handed to Fox."); if (S.acct) renderAcct(); return; }
+  }
+  const body = "Fox Atlas ask below. Send this as it is.\n\n" + JSON.stringify(payload);
+  const href = `mailto:${FOX_EMAIL}?subject=${encodeURIComponent("Fox Atlas ask: " + kind + (payload.who ? " " + payload.who : ""))}&body=${encodeURIComponent(body)}`;
+  window.location.href = href;
+  flash("An email to yourself is open with this in it. Send it; Fox picks it up within the hour.");
+  if (S.acct) renderAcct();
+}
+function presentPicked(a){
+  const ids = Object.keys(S.pick.sel).filter(k => S.pick.sel[k]); if (!ids.length) return;
+  const sites = ids.map(i => (a.sites || []).find(s => s.id === i)).filter(Boolean);
+  const note = prompt("Anything to tell " + ((a.client || {}).name || "the client") + " about these? (optional)") || "";
+  const payload = { kind:"present", dealId:a.id, deal:a.name, who: sites.map(s => s.name).join(", "), sites: sites.map(s => ({ id:s.id, name:s.name, address:s.address || "", city:s.city || "", thread:s.thread || "", pid:s.pid || null })), thread: S.acctThread[a.id] && S.acctThread[a.id] !== "all" ? S.acctThread[a.id] : (sites[0] && sites[0].thread) || "", note, created:new Date().toISOString() };
+  S.pick = null;
+  sendAsk(payload, `Queued ${sites.length} to present. Packaged at the next pickup; the email to ${(a.client || {}).name || "the client"} comes back on Fox HQ for your Approve.`);
+}
+async function sendAsk(payload, okMsg){
+  if (S.mac){
+    let res = null;
+    try { res = await fetch("/api/ask", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload) }); } catch(e){ res = null; }
+    if (res && res.ok){ flash(okMsg); renderAcct(); return; }
+  }
+  const href = `mailto:${FOX_EMAIL}?subject=${encodeURIComponent("Fox Atlas ask: " + payload.kind + " " + (payload.who || ""))}&body=${encodeURIComponent("Fox Atlas ask below. Send this as it is.\n\n" + JSON.stringify(payload))}`;
+  window.location.href = href; flash("An email to yourself is open with this in it. Send it; Fox picks it up within the hour."); renderAcct();
+}
+/* A site the sheet knows but the pond does not (no parcel under it): the card from the site record alone. */
+function showSite(a, s){
+  S.sel = null;
+  $("#dad").textContent = s.name;
+  $("#dct").textContent = [s.address, s.city].filter(Boolean).join(", ") || "no street address on file";
+  $("#dbody").innerHTML = acctSection(a, s) + `<div class="dsec"><h4>Do</h4><div id="dacts"></div></div>`;
+  wireSiteActs(a, s, null);
+  $("#detail").classList.add("show");
+}
+function acctSection(a, s){
+  const thn = s.thread && a.threads ? (a.threads.find(x => x.k === s.thread) || {}).who || "" : "";
+  const hist = (s.history || []).length ? `<details class="hist" ${s.history.length <= 2 ? "open" : ""}><summary>Everything on file about it (${s.history.length}) ›</summary>${s.history.map(h => `<div class="hl"><b>${esc(h.when)}</b> · ${esc(h.text)}</div>`).join("")}</details>` : "";
+  const gates = (s.gates || []).length ? `<div style="margin-top:6px;font-size:11.5px">${s.gates.map(g => `<div><span style="color:${g.ok ? "var(--green)" : "var(--yours)"};font-weight:700">${g.ok ? "✓" : "○"}</span> ${esc(g.t)}${g.when ? " · " + esc(g.when) : ""}</div>`).join("")}</div>` : "";
+  const contact = [s.person ? esc(s.person) + (s.firm ? ", " + esc(s.firm) : "") : null, s.phone ? `<a href="tel:${esc(String(s.phone).replace(/[^0-9+]/g, ""))}">${esc(s.phone)}</a>` : null, s.email ? `<a href="mailto:${esc(s.email)}">${esc(s.email)}</a>` : null].filter(Boolean).join(" · ");
+  return `<div class="dsec known"><div class="acctline"><span class="st ${s.status.hollow ? "hollow" : ""}" style="background:${s.status.hollow ? "none" : s.status.color};font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:${s.status.hollow ? "var(--navy)" : "#fff"};border-radius:5px;padding:2px 6px;${s.status.hollow ? "border:1px dashed var(--navy)" : ""}">${esc(s.status.short)}</span> ${esc(a.title)}${thn ? " · for " + esc(thn) : ""}</div>
+    <div class="note" style="margin-top:3px">${esc(s.status.t)}${s.statusBasis ? " · from " + esc(s.statusBasis) : ""}</div>
+    ${s.kind ? `<div class="note" style="margin-top:4px;color:var(--ink)">${esc(s.kind)}</div>` : ""}
+    ${s.courtLine ? `<div class="note" style="margin-top:4px;font-weight:650;color:${s.court === "you" ? "var(--yours)" : s.court === "nobody" ? "var(--accent)" : "var(--muted)"}">${esc(s.courtLine)}</div>` : ""}
+    ${s.queued ? `<div class="note" style="margin-top:4px;color:var(--green);font-weight:650">Queued to present${s.queued.state === "packaged" ? ", packaged" : ""}. Mark's sheet rows go in from a live session, three or four at a time.</div>` : ""}
+    ${contact ? `<div class="note" style="margin-top:6px"><b>${a.kind === "listing" || a.kind === "sale" ? "Contact" : "Listing broker"}:</b> ${contact}</div>` : ""}
+    ${gates}
+    ${s.last && s.last !== s.courtLine ? `<div class="note" style="margin-top:6px"><b>Last touch${s.lastWhen ? ", " + esc(s.lastWhen) : ""}:</b> ${esc(s.last)}</div>` : ""}
+    ${s.notes && s.notes.clientLine ? `<div class="note" style="margin-top:4px"><b>The client sees:</b> ${esc(s.notes.clientLine)}</div>` : ""}
+    ${s.notes && s.notes.broker ? `<div class="note" style="margin-top:4px">${esc(s.notes.broker)}</div>` : ""}
+    ${s.passReason ? `<div class="note" style="margin-top:4px"><b>Why it is out:</b> ${esc(s.passReason)}</div>` : ""}
+    ${(s.links || []).map(l => `<div class="note" style="margin-top:4px"><a href="${esc(l.url)}" target="_blank" rel="noopener" style="color:var(--yours);font-weight:600">${esc(l.t)} ›</a></div>`).join("")}
+    ${hist}
+  </div>`;
+}
+function wireSiteActs(a, s, r){
+  const acts = $("#dacts"); if (!acts) return;
+  const tenant = a && (a.kind === "tenant" || a.kind === "buyer");
+  let h = "";
+  if (a && s && tenant && s.status.group !== "dead" && !s.queued && !s.pend) h += `<button class="act" data-a="present">▶ Present it to ${esc((a.client || {}).name || "the client")}</button>`;
+  if (a && s && (s.person || s.email || s.phone || (r && (r[C.FLAGS] & F.LISTED)))) h += `<button class="act ghost" data-a="broker">✉ Ask the listing broker</button>`;
+  if (r && !(a && s)) {
+    const targets = S.accounts.filter(x => x.kind === "tenant" || x.kind === "buyer");
+    if (targets.length) h += `<button class="act ghost" data-a="addto">＋ Add to a deal as identified</button>`;
+    if (!(r[C.FLAGS] & F.LISTED) && !(r[C.FLAGS] & F.OFFLIMITS)) h += `<button class="act ghost" data-a="prospect">☎ Prospect this one: contact the owner</button>`;
+  }
+  if (a && a.hqUrl) h += `<a class="act ghost" href="${esc(a.hqUrl)}" target="_blank" rel="noopener" style="text-decoration:none">◆ Open ${esc(a.title)} in Fox HQ</a>`;
+  acts.insertAdjacentHTML("afterbegin", h);
+  acts.addEventListener("click", e => {
+    const b = e.target.closest("[data-a]"); if (!b) return;
+    const k = b.dataset.a;
+    if (k === "present"){ const note = prompt("Anything to tell the client about this one? (optional)") || ""; ask("present", a, s, null, note); showRefresh(a, s, r); }
+    else if (k === "broker"){ const note = prompt("What do you want to ask? Availability, rate, condition, timing.") ; if (note == null) return; ask("broker", a, s, null, note); showRefresh(a, s, r); }
+    else if (k === "addto"){ pickDeal(r); }
+    else if (k === "prospect"){ prospectOne(r); }
+  });
+}
+function showRefresh(a, s, r){ if (r) showDetail(r); else if (a && s) showSite(a, s); }
+function pickDeal(r){
+  const targets = S.accounts.filter(x => x.kind === "tenant" || x.kind === "buyer");
+  const names = targets.map((x, i) => `${i + 1}. ${x.title}`).join("\n");
+  const ans = prompt("Add " + (r[C.SITUS] || "this property") + " to which deal? Type the number.\n\n" + names);
+  const i = parseInt(ans, 10) - 1; if (!(i >= 0 && i < targets.length)) return;
+  const t = S.counties[r.__c];
+  const sug = { id: "map-" + r[C.PID], address: r[C.SITUS], city: t.cities[r[C.CITY]], pid: r[C.PID], lid: (listingOf(r) && listingOf(r).u) ? "" : "", url: (listingOf(r) || {}).u || "" };
+  ask("add", targets[i], null, sug);
+}
+/* Prospect this one: the cold-prospecting lane kept, as a per-property action, never a front door (Andrew, 2026-09-18).
+   One parcel becomes a run of one; the checker does the owner pierce and the Article 16 check fail-closed. */
+function prospectOne(r){
+  const p = PURPOSES.find(x => x.id === "listings"); if (!p) return;
+  S.purpose = p; $("#pval").textContent = p.title;
+  S.run = { p, i: p.steps.length - 1, name: "Prospect " + (r[C.SITUS] || r[C.PID]), saved: null, steps: p.steps.map(s => ({ spec:s, status:"done", n:1, note:null, snap:null, vals:{} })) };
+  S.run.steps[S.run.i].status = "cur";
+  S.list = { items:[{ r, kept:true }], cur:0 };
+  handoff([r]);
+  showPane("run"); renderRun(); if (PHONE()) openSide(true);
 }
 
 /* ================= THE GUIDED RUN ================= */
@@ -1301,6 +1717,7 @@ function startRun(p){
   S.run = { p, i:0, name:null, saved:null,
             steps:p.steps.map(s => ({ spec:s, status:"todo", n:null, note:null, snap:null, vals:{} })) };
   S.run.steps[0].status = "cur"; S.run.steps[0].snap = snapshot();
+  showPane("run");
   syncFilterUI(); renderRun(); apply();
   if (PHONE()) openSide(true);
 }
@@ -1365,10 +1782,11 @@ function liveRunNumbers(){
 
 function renderRun(){
   const body = $("#runbody");
+  if (!S.acct) showPane(S.run || S.portfolio != null ? "run" : "home");
   if (S.portfolio != null){
     body.innerHTML = `<div class="banner"><span>Everything ${esc(S.portfolio)} holds · ${fmt(S.filtered.length)}</span><button data-do="clearspecial">back</button></div>` + (S.run ? runHTML() : "");
   } else if (!S.run){
-    body.innerHTML = `<div class="idle"><b>Nothing running yet.</b>Pick what you are here to do and the map turns it into a short play.<br><button class="go" data-do="pick" style="width:auto;display:inline-flex;padding:10px 18px">Pick a purpose</button></div>`;
+    body.innerHTML = `<div class="idle"><b>No play running.</b>Your deals and the plays are one tap back.<br><button class="go" data-do="home" style="width:auto;display:inline-flex;padding:10px 18px">Back to your deals</button></div>`;
   } else {
     body.innerHTML = (S.f.soldAfter != null && !S.run.steps.some(s => s.spec.kind === "narrow" && s.status !== "todo") ? `<div class="banner"><span>Sold since ${S.f.soldAfter}, half a mile</span><button data-do="clearspecial">back</button></div>` : "") + runHTML();
   }
@@ -1537,6 +1955,7 @@ $("#runbody").addEventListener("click", e => {
   const b = e.target.closest("[data-do]"); if (!b) return;
   const d = b.dataset.do;
   if (d === "pick") openSheet();
+  else if (d === "home"){ S.run = null; S.purpose = null; $("#pval").textContent = "Chase listings, find sites, look something up…"; S.f = freshF(); setRadius(null); syncFilterUI(); renderHome(); showPane("home"); apply(); renderPeek(); }
   else if (d === "restart") startRun(S.run.p);
   else if (d === "rewind") rewind(Number(b.dataset.k));
   else if (d === "clearspecial") clearSpecial();
@@ -1859,24 +2278,27 @@ function endTour(mark){
 /* ---------------- mobile ---------------- */
 function openSide(open){ $("#side").classList.toggle("open", !!open); $("#tabrun").setAttribute("aria-pressed", open ? "true" : "false"); $("#tabmap").setAttribute("aria-pressed", open ? "false" : "true"); }
 function renderPeek(){
-  const st = cur();
-  $("#peekk").textContent = S.run ? `Step ${S.run.i+1} of ${S.run.steps.length} · ${S.run.p.title}` : "Property map";
-  $("#peekv").textContent = st ? st.spec.title : "Pick a purpose";
-  $("#peekn").textContent = S.portfolio != null ? `Everything ${S.portfolio} holds` : (S.filtered.length ? `${fmt(S.filtered.length)} on the map` : "");
+  const st = cur(), a = S.acct ? acctById(S.acct) : null;
+  $("#peekk").textContent = a ? a.side : S.run ? `Step ${S.run.i+1} of ${S.run.steps.length} · ${S.run.p.title}` : "Fox Atlas";
+  $("#peekv").textContent = a ? a.title : st ? st.spec.title : "Your deals";
+  $("#peekn").textContent = a ? `${(a.sites||[]).filter(liveSite).length} in play · ${(a.sites||[]).length} on file` : S.portfolio != null ? `Everything ${S.portfolio} holds` : (S.filtered.length ? `${fmt(S.filtered.length)} on the map` : "");
 }
 $("#peek").onclick = () => openSide(!$("#side").classList.contains("open"));
-$("#tabrun").onclick = () => { $("#list").classList.remove("show"); if (!S.run) openSheet(); else openSide(true); };
+$("#tabrun").onclick = () => { $("#list").classList.remove("show"); openSide(true); };
 $("#tabmap").onclick = () => { openSide(false); $("#list").classList.remove("show"); };
 $("#tablist").onclick = () => { openSide(false); if (!S.list) makeList(); else renderList(); $("#list").classList.add("show"); ["tabrun","tabmap"].forEach(id => $("#"+id).setAttribute("aria-pressed","false")); $("#tablist").setAttribute("aria-pressed","true"); };
 
-/* ---------------- basemap toggle ---------------- */
+/* ---------------- basemap toggle: a visible button now, and the b key still works ---------------- */
+function toggleBase(){
+  map.removeLayer(basemap === "streets" ? streets : imagery);
+  basemap = basemap === "streets" ? "imagery" : "streets";
+  (basemap === "streets" ? streets : imagery).addTo(map);
+  const b = $("#btnbase"); if (b){ b.textContent = basemap === "streets" ? "◈ Aerial" : "◈ Map"; b.setAttribute("aria-pressed", basemap === "imagery" ? "true" : "false"); }
+  flash(basemap === "streets" ? "Street map" : "Aerial");
+}
+$("#btnbase").onclick = toggleBase;
 document.addEventListener("keydown", e => {
-  if (e.key === "b" && !e.target.matches("input,textarea,select")){
-    map.removeLayer(basemap === "streets" ? streets : imagery);
-    basemap = basemap === "streets" ? "imagery" : "streets";
-    (basemap === "streets" ? streets : imagery).addTo(map);
-    flash(basemap === "streets" ? "Street map" : "Aerial");
-  }
+  if (e.key === "b" && !e.target.matches("input,textarea,select")) toggleBase();
 });
 
 boot();
