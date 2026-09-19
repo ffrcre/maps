@@ -1,5 +1,5 @@
 {
- "built": "2026-09-18T05:56:22",
+ "built": "2026-09-19T05:56:20",
  "counties": [
   {
    "county": "Denver",
@@ -71,8 +71,8 @@
  "parcels": 110136,
  "overlay": {
   "file": "data/overlay.json.gz",
-  "flags": 7086,
-  "listings": 5498,
-  "bytes": 238619
+  "flags": 7095,
+  "listings": 5507,
+  "bytes": 314853
  }
 }
