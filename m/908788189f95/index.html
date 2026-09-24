@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Fox Atlas</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+/* Property map — the guided run (2026-09-15). Fox HQ v4 language: warm white, navy, the accent
+   red only for "stop", gold for "your move", green for done. One look, on purpose. */
+:root{
+  /* 2026-09-20: the hub's tokens (the independent review's Part 3 section 9), so the map reads as a screen of Fox HQ:
+     ink for buttons and text, gold only for his move, the warm ground, pills for buttons, 12 for cards, 20 for sheets */
+  --navy:#1B2733; --accent:#8a1f2d; --gold:#8A6A1E; --yours:#8A6A1E; --yours-soft:#f5efe1;
+  --green:#2f7a55; --green-soft:#e4f1ea; --red-soft:#f7e9eb;
+  --ink:#1B2733; --muted:#6F6B64; --faint:#9aa1ab;
+  --hair:rgba(17,24,39,.09); --hair2:rgba(17,24,39,.055);
+  --bg:#F6F4EF; --panel:#ffffff; --sink:#F6F4EF;
+  --known:#0a7aff; --spoken:#0f8a4b; --offlimits:#c0392b;
+  --owneropp:#b8933a; --plain:#7b8694; --deal:#8e44e0;
+  --r-sheet:20px; --r-card:12px; --r-btn:999px; --r-pill:999px;
+  --shadow-float:0 10px 34px rgba(17,24,39,.16);
+  --shadow-card:0 1px 3px rgba(17,24,39,.09), 0 6px 18px rgba(17,24,39,.05);
+  --ease:cubic-bezier(.22,.9,.24,1);
+  --sidebar:352px; --tabh:56px;
+  color-scheme: light;
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; margin:0; }
+body{
+  font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,system-ui,sans-serif;
+  color:var(--ink); background:var(--bg); overflow:hidden;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+button,input,select{ font:inherit; color:inherit; }
+button{ background:none; border:0; cursor:pointer; touch-action:manipulation; }
+:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; border-radius:6px; }
+.tnum{ font-variant-numeric:tabular-nums; }
+[hidden]{ display:none !important; }
+
+/* ---------- shell ---------- */
+#shell{ display:grid; grid-template-columns:var(--sidebar) 1fr; height:100%; }
+#map{ position:relative; height:100%; width:100%; background:#dfe3e8; z-index:1; }
+.leaflet-container{ font-family:inherit; background:#dfe3e8; }
+.leaflet-control-attribution{ font-size:9.5px !important; background:rgba(255,255,255,.72) !important; }
+.leaflet-control-zoom{ border:0 !important; border-radius:var(--r-btn); overflow:hidden; box-shadow:var(--shadow-card); margin-top:76px !important; }
+.leaflet-control-zoom a{ width:34px; height:34px; line-height:34px; background:#fff; color:var(--navy); border:0 !important; font-size:17px; }
+.leaflet-control-zoom a:hover{ background:#f2f3f5; }
+#map.placing{ cursor:crosshair; }
+
+/* ---------- sidebar ---------- */
+#side{
+  background:var(--panel); border-right:1px solid var(--hair);
+  display:flex; flex-direction:column; min-height:0; z-index:5;
+}
+#brand{
+  padding:14px 16px 12px; border-bottom:1px solid var(--hair2);
+  display:flex; align-items:center; gap:10px; flex:0 0 auto;
+}
+#hqback{ font-size:12.5px; font-weight:700; color:var(--muted); text-decoration:none; white-space:nowrap; margin-right:2px; }
+#hqback:hover{ color:var(--ink); }
+#brand .mark{
+  width:28px; height:28px; border-radius:8px; flex:0 0 auto;
+  background:linear-gradient(145deg,var(--navy),#2c4272);
+  display:grid; place-items:center; color:#fff; font-weight:750; font-size:12px;
+  letter-spacing:.02em; box-shadow:0 2px 6px rgba(27,42,74,.28);
+}
+#brand h1{ font-size:14.5px; margin:0; font-weight:650; letter-spacing:-.01em; }
+#brand .sub{ font-size:11px; color:var(--faint); margin-top:1px; }
+#peek{ display:none; }
+
+#purposebar{ padding:10px 12px; border-bottom:1px solid var(--hair2); flex:0 0 auto; }
+#purposebtn{
+  width:100%; display:flex; align-items:center; gap:9px; text-align:left;
+  padding:9px 11px; border-radius:var(--r-btn); background:var(--sink);
+  border:1px solid transparent; transition:background .18s var(--ease), border-color .18s var(--ease);
+  min-height:44px;
+}
+#purposebtn:hover{ background:#ececeb; border-color:var(--hair2); }
+#purposebtn .ic{ font-size:15px; line-height:1; }
+#purposebtn .tx{ flex:1; min-width:0; }
+#purposebtn .lbl{ display:block; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--faint); font-weight:650; }
+#purposebtn .val{ display:block; font-size:13px; font-weight:600; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#purposebtn .chev{ color:var(--faint); font-size:11px; }
+
+#run{ overflow-y:auto; flex:1 1 auto; padding:0 0 90px; overscroll-behavior:contain; }
+#runbody{ padding:12px 12px 4px; }
+.idle{ padding:26px 10px; text-align:center; color:var(--muted); font-size:13px; line-height:1.5; }
+.idle b{ display:block; color:var(--ink); font-size:15px; margin-bottom:4px; }
+.idle button{ margin-top:12px; }
+
+/* progress */
+.runhead{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin:2px 2px 10px; }
+.runhead .rk{ font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); font-weight:700; }
+.runhead .rk b{ color:var(--ink); }
+.runhead button{ font-size:11.5px; color:var(--muted); font-weight:600; padding:6px 4px; }
+.bar{ height:3px; background:var(--hair2); border-radius:2px; margin:0 2px 12px; overflow:hidden; }
+.bar > span{ display:block; height:100%; background:var(--gold); border-radius:2px; transition:width .5s var(--ease); }
+
+/* steps */
+.step{ border-radius:var(--r-card); margin-bottom:8px; }
+.step.done{
+  display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  padding:9px 12px; background:var(--green-soft); color:var(--green);
+  animation:fold .32s var(--ease);
+}
+.step.done .tick{ width:18px; height:18px; border-radius:50%; background:var(--green); color:#fff; display:grid; place-items:center; font-size:10px; font-weight:800; flex:0 0 auto; }
+.step.done .t{ flex:1; min-width:0; font-weight:650; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.step.done .n{ font-size:12px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.step.done:hover{ filter:brightness(.97); }
+.step.todo{ display:flex; align-items:center; gap:10px; padding:8px 12px; color:var(--faint); font-size:12.5px; }
+.step.todo .k{ width:18px; height:18px; border-radius:50%; border:1.5px solid var(--hair); display:grid; place-items:center; font-size:10px; font-weight:700; flex:0 0 auto; }
+.step.cur{
+  background:var(--panel); border:1px solid var(--hair); box-shadow:var(--shadow-card);
+  padding:14px 15px 15px; animation:rise .34s var(--ease);
+}
+.step.cur .kicker{ font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--yours); font-weight:750; }
+.step.cur h2{ margin:3px 0 6px; font-size:17px; font-weight:750; letter-spacing:-.02em; line-height:1.2; }
+.step.cur .do{ margin:0; font-size:13.5px; line-height:1.45; }
+.step.cur .why{ margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45; font-style:italic; }
+.step.cur .body{ margin-top:12px; }
+@keyframes rise{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+@keyframes fold{ from{ opacity:.3; transform:translateY(-4px); } to{ opacity:1; transform:none; } }
+
+.go{
+  width:100%; min-height:44px; padding:10px 14px; border-radius:var(--r-btn); font-size:13.5px; font-weight:700;
+  background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; gap:8px;
+  box-shadow:0 1px 4px rgba(27,42,74,.24); transition:transform .14s var(--ease), filter .16s;
+}
+.go:hover{ filter:brightness(1.08); } .go:active{ transform:scale(.985); }
+.go.ghost{ background:var(--sink); color:var(--ink); box-shadow:none; }
+.go.ghost:hover{ background:#ebebe9; }
+.go + .go{ margin-top:7px; }
+.alt{ display:block; width:100%; text-align:center; margin-top:8px; font-size:12.5px; color:var(--muted); font-weight:600; padding:8px; min-height:36px; }
+.alt:hover{ color:var(--ink); }
+.altlink{ font-size:12px; color:var(--yours); font-weight:600; padding:6px 0; }
+.result{ display:flex; align-items:baseline; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--hair2); }
+.result .num{ font-size:26px; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; line-height:1; }
+.result .lbl{ font-size:12.5px; color:var(--muted); }
+.result .sm{ margin-left:auto; }
+.big{ font-size:34px; font-weight:800; letter-spacing:-.03em; line-height:1; font-variant-numeric:tabular-nums; color:var(--navy); }
+.measure p{ margin:8px 0 0; font-size:12.5px; line-height:1.45; }
+.dead{ margin-top:12px; padding:12px; border-radius:12px; background:var(--yours-soft); font-size:12.5px; line-height:1.45; }
+.dead b{ display:block; margin-bottom:3px; }
+.dead .rx{ display:flex; flex-direction:column; gap:6px; margin-top:9px; }
+.dead .rx button{ display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; text-align:left; padding:9px 11px; background:#fff; border-radius:9px; font-weight:600; font-size:12.5px; border:1px solid var(--hair); min-height:40px; }
+.dead .rx button b{ color:var(--green); font-variant-numeric:tabular-nums; margin:0; }
+.miles{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; font-size:12px; color:var(--muted); }
+.seg{ display:inline-flex; background:var(--sink); border-radius:9px; padding:3px; gap:2px; }
+.seg button{ padding:6px 9px; border-radius:7px; font-size:12px; font-weight:650; color:var(--muted); min-width:36px; min-height:32px; }
+.seg button.on{ background:#fff; color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.09); }
+.or{ display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; color:var(--muted); }
+.or select{ flex:1; min-width:0; padding:8px 9px; border-radius:9px; background:var(--sink); border:1px solid transparent; font-size:12.5px; min-height:38px; }
+.cull{ display:flex; align-items:baseline; gap:6px; margin-bottom:10px; }
+.cull .num{ font-size:26px; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.cull .lbl{ color:var(--muted); font-size:12.5px; }
+.finish .kept{ display:flex; align-items:baseline; gap:8px; margin-bottom:12px; }
+.finish .kept .num{ font-size:30px; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.finish .kept .lbl{ color:var(--muted); font-size:12.5px; }
+.finish .acts{ display:flex; flex-direction:column; gap:7px; }
+.finish .sub{ font-size:11.5px; color:var(--faint); text-align:center; margin-top:4px; }
+.save{ display:flex; gap:6px; margin-top:12px; }
+.save input{ flex:1; min-width:0; padding:9px 11px; border-radius:9px; background:var(--sink); border:1px solid transparent; font-size:13px; min-height:40px; }
+.save input:focus{ background:#fff; border-color:var(--gold); outline:none; }
+.save button{ padding:0 13px; border-radius:9px; background:var(--sink); font-weight:700; font-size:12.5px; min-height:40px; }
+.saved{ margin-top:10px; font-size:12.5px; color:var(--green); font-weight:600; }
+.state{ margin-top:10px; padding:11px 12px; border-radius:11px; background:var(--sink); font-size:12.5px; line-height:1.45; }
+.state.ok{ background:var(--green-soft); color:#1f5b3f; }
+.state.bad{ background:var(--red-soft); color:var(--accent); }
+.state .spin{ display:inline-block; width:11px; height:11px; border:2px solid var(--hair); border-top-color:var(--navy); border-radius:50%; animation:spin .7s linear infinite; vertical-align:-1px; margin-right:6px; }
+.state ul{ margin:6px 0 0; padding-left:16px; }
+.state li{ margin:2px 0; }
+.owners{ margin-top:8px; font-size:12px; }
+.owners div{ padding:5px 0; border-top:1px solid var(--hair2); display:flex; gap:8px; justify-content:space-between; }
+.owners .st{ font-weight:700; white-space:nowrap; }
+.owners .st.clear{ color:var(--green); } .owners .st.listed{ color:var(--accent); } .owners .st.hold{ color:var(--yours); }
+.banner{ margin:0 0 10px; padding:9px 12px; border-radius:11px; background:var(--yours-soft); color:var(--yours); font-size:12.5px; font-weight:600; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.banner button{ color:var(--yours); font-weight:700; }
+
+/* saved runs + tour link on the sheet */
+.srlist{ padding:0 14px 16px; }
+.srlist h3{ font-size:10.5px; text-transform:uppercase; letter-spacing:.075em; color:var(--faint); margin:6px 0 8px; font-weight:700; }
+.sr{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid var(--hair); margin-bottom:6px; }
+.sr .t{ flex:1; min-width:0; }
+.sr .t b{ display:block; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sr .t span{ font-size:11.5px; color:var(--muted); }
+.sr .runb{ padding:7px 12px; border-radius:9px; background:var(--navy); color:#fff; font-weight:700; font-size:12px; min-height:34px; }
+.sr .del{ color:var(--faint); font-size:15px; padding:4px 6px; }
+.tourlink{ display:block; width:100%; text-align:center; padding:12px; font-size:12.5px; color:var(--yours); font-weight:700; border-top:1px solid var(--hair2); }
+
+/* by-hand filters (folded under the run) */
+#byhand{ border-top:1px solid var(--hair2); margin-top:6px; }
+#byhand summary{ list-style:none; cursor:pointer; padding:11px 16px; font-size:11.5px; color:var(--muted); font-weight:650; display:flex; justify-content:space-between; align-items:center; }
+#byhand summary::-webkit-details-marker{ display:none; }
+#byhand summary::after{ content:"›"; color:var(--gold); font-size:15px; transition:transform .2s; }
+#byhand[open] summary::after{ transform:rotate(90deg); }
+.fg{ border-top:1px solid var(--hair2); padding:12px 16px; }
+.fg > h3{
+  font-size:10.5px; text-transform:uppercase; letter-spacing:.075em;
+  color:var(--faint); font-weight:700; margin:0 0 9px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.fg > h3 .clr{ font-size:10px; color:var(--known); text-transform:none; letter-spacing:0; font-weight:600; opacity:0; transition:opacity .18s; }
+.fg.on > h3 .clr{ opacity:1; }
+.chips{ display:flex; flex-wrap:wrap; gap:6px; }
+.chip{
+  padding:7px 12px; border-radius:var(--r-pill); background:var(--sink);
+  font-size:12.5px; font-weight:550; color:var(--ink); white-space:nowrap; min-height:34px;
+  border:1px solid transparent; transition:all .16s var(--ease);
+}
+.chip:hover{ background:#ebebe9; }
+.chip[aria-pressed="true"]{ background:var(--navy); color:#fff; border-color:var(--navy); box-shadow:0 1px 4px rgba(27,42,74,.24); }
+.chip.k[aria-pressed="true"]{ background:var(--known); border-color:var(--known); }
+.chip.s[aria-pressed="true"]{ background:var(--spoken); border-color:var(--spoken); }
+.chip.o[aria-pressed="true"]{ background:var(--owneropp); border-color:var(--owneropp); }
+.chip.x[aria-pressed="true"]{ background:var(--offlimits); border-color:var(--offlimits); }
+.chip.m[aria-pressed="true"]{ background:var(--accent); border-color:var(--accent); }
+.tag.m{ background:rgba(138,31,45,.12); color:#7a1a27; }
+.tag.g{ background:rgba(17,24,39,.1); color:#374151; }
+.brokers{ margin-top:10px; font-size:12px; color:var(--muted); line-height:1.5; }
+.brokers b{ color:var(--ink); font-weight:650; }
+.row .lb{ display:inline-block; margin-left:6px; padding:1px 6px; border-radius:6px; background:rgba(138,31,45,.12); color:#7a1a27; font-size:10px; font-weight:750; letter-spacing:.04em; text-transform:uppercase; vertical-align:1px; }
+.runs{ padding:0 14px 6px; }
+.runs h3{ font-size:10.5px; text-transform:uppercase; letter-spacing:.075em; color:var(--faint); margin:6px 0 8px; font-weight:700; }
+.runs .rn{ padding:8px 12px; border-radius:12px; background:var(--sink); margin-bottom:6px; font-size:12px; line-height:1.45; }
+.runs .rn b{ display:block; font-size:12.5px; }
+.runs .rn .st{ color:var(--green); font-weight:650; }
+.runs .rn .st.bad{ color:var(--accent); }
+.chip .n{ font-size:10.5px; opacity:.6; margin-left:4px; font-variant-numeric:tabular-nums; }
+.range{ display:flex; align-items:center; gap:7px; }
+.range input{
+  width:100%; min-width:0; padding:8px 9px; border-radius:9px; background:var(--sink);
+  border:1px solid transparent; font-size:12.5px; font-variant-numeric:tabular-nums; min-height:38px;
+  transition:border-color .16s, background .16s;
+}
+.range input:focus{ background:#fff; border-color:var(--gold); outline:none; }
+.range span{ color:var(--faint); font-size:11.5px; flex:0 0 auto; }
+.range + .range{ margin-top:7px; }
+.range label{ font-size:11px; color:var(--faint); width:44px; flex:0 0 auto; }
+.hint{ font-size:11px; color:var(--faint); margin-top:7px; line-height:1.4; }
+.hint.warn{ color:#9a6a12; }
+
+
+/* ---------- the deals-first sidebar, the account view, the card (2026-09-18) ---------- */
+#home{ padding:12px 12px 8px; }
+#home h3, #acct h3{ font-size:10.5px; text-transform:uppercase; letter-spacing:.075em; color:var(--faint); margin:10px 2px 8px; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
+.deal{ display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:10px 11px; border-radius:12px; border:1px solid var(--hair); margin-bottom:6px; background:var(--panel); transition:all .16s var(--ease); }
+.deal:hover{ border-color:var(--navy); box-shadow:var(--shadow-card); transform:translateY(-1px); }
+.deal .strip{ display:flex; flex-direction:column; gap:2px; width:6px; flex:0 0 auto; }
+.deal .strip i{ display:block; height:6px; border-radius:2px; }
+.deal .tx{ flex:1; min-width:0; }
+.deal .tx b{ display:block; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.deal .tx span{ display:block; font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.deal .n{ font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.deal .n.hot{ background:var(--accent); color:#fff; border-radius:9px; padding:1px 7px; }
+.plays{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.play{ text-align:left; padding:9px 10px; border-radius:11px; background:var(--sink); font-size:12px; font-weight:650; min-height:44px; display:flex; align-items:center; gap:7px; }
+.play:hover{ background:#ebebe9; }
+.play .ic{ font-size:15px; }
+#srcs{ margin:14px 2px 0; padding-top:10px; border-top:1px solid var(--hair2); font-size:11.5px; color:var(--muted); line-height:1.5; }
+#srcs b{ color:var(--ink); font-weight:650; }
+#srcs .stale{ color:var(--accent); font-weight:650; }
+#srcs .bk{ display:inline-block; margin:6px 6px 0 0; padding:6px 10px; border-radius:9px; background:var(--navy); color:#fff; font-weight:700; font-size:11.5px; text-decoration:none; cursor:grab; }
+#srcs .how{ margin-top:6px; font-size:11px; color:var(--faint); }
+#acct{ padding:0 12px 16px; }
+.acct-head{ padding:12px 2px 6px; display:flex; gap:10px; align-items:center; }
+.acct-head img{ height:26px; width:auto; max-width:90px; border-radius:4px; }
+.acct-head .t{ font-size:16px; font-weight:750; letter-spacing:-.02em; line-height:1.2; }
+.acct-head .k{ font-size:11.5px; color:var(--muted); margin-top:1px; }
+.backlink{ font-size:12px; color:var(--yours); font-weight:650; padding:8px 2px 0; display:inline-block; }
+.thchips, .gchips{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 8px; }
+.thchips .chip[aria-pressed="true"]{ background:var(--navy); border-color:var(--navy); }
+.gchips .chip{ padding:5px 10px; min-height:30px; font-size:12px; }
+.lg{ display:flex; gap:5px 12px; flex-wrap:wrap; font-size:11px; color:var(--muted); margin:0 0 8px; }
+.lg i{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+.lg i.hollow{ background:none!important; border:1.5px dashed var(--navy); }
+.site{ display:flex; gap:9px; align-items:flex-start; width:100%; text-align:left; padding:8px 8px 8px 10px; border-radius:11px; border:1px solid var(--hair2); margin-bottom:5px; background:var(--panel); position:relative; }
+.site:hover{ border-color:var(--hair); background:#fbfbfa; }
+.site.cur{ border-color:var(--navy); box-shadow:inset 3px 0 0 var(--navy); }
+.site .dot{ width:11px; height:11px; border-radius:50%; flex:0 0 auto; margin-top:3px; }
+.site .dot.hollow{ background:none!important; border:1.5px dashed var(--navy); }
+.site .tx{ flex:1; min-width:0; }
+.site .tx b{ display:block; font-size:12.5px; line-height:1.3; }
+.site .tx span{ display:block; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.site .st{ font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#fff; border-radius:5px; padding:2px 6px; flex:0 0 auto; white-space:nowrap; }
+.site .st.hollow{ background:none!important; border:1px dashed var(--navy); color:var(--navy); }
+.site .ck{ width:18px; height:18px; border-radius:5px; border:1.5px solid var(--hair); display:grid; place-items:center; font-size:10px; color:#fff; flex:0 0 auto; margin-top:1px; }
+.site.on .ck{ background:var(--gold); border-color:var(--gold); }
+.site .th{ display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; background:var(--sink); border-radius:5px; padding:1px 5px; margin-right:4px; vertical-align:1px; }
+.sugrow{ padding:8px 10px; border-radius:11px; border:1px dashed var(--hair); margin-bottom:5px; font-size:12px; }
+.sugrow b{ display:block; font-size:12.5px; }
+.sugrow span{ color:var(--muted); font-size:11px; display:block; margin-top:1px; }
+.sugrow .acts{ display:flex; gap:6px; margin-top:6px; }
+.sugrow .acts button, .sugrow .acts a{ padding:6px 10px; border-radius:8px; background:var(--sink); font-size:11.5px; font-weight:650; color:var(--ink); text-decoration:none; min-height:32px; display:inline-flex; align-items:center; }
+.sugrow .acts .pri{ background:var(--navy); color:#fff; }
+.pbar{ position:sticky; bottom:8px; margin:10px 0 0; background:var(--navy); color:#fff; border-radius:13px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:12.5px; box-shadow:var(--shadow-float); }
+.pbar button{ padding:7px 11px; border-radius:9px; background:rgba(255,255,255,.14); color:#fff; font-weight:700; font-size:12px; min-height:34px; }
+.pbar button.go{ background:var(--gold); width:auto; min-height:34px; padding:7px 12px; }
+.pbar button:disabled{ opacity:.45; }
+#dbody .photo{ width:100%; height:150px; object-fit:cover; display:block; background:var(--sink); }
+#dbody .nophoto{ padding:8px 15px 0; font-size:11px; color:var(--faint); }
+#dbody .mini{ height:170px; border-radius:10px; overflow:hidden; background:#dfe3e8; margin-top:6px; }
+#dbody details.hist{ margin-top:6px; }
+#dbody details.hist summary{ list-style:none; cursor:pointer; font-size:12px; font-weight:700; color:var(--yours); padding:4px 0; }
+#dbody details.hist summary::-webkit-details-marker{ display:none; }
+#dbody .hl{ font-size:11.5px; color:var(--muted); padding:5px 0; border-top:1px solid var(--hair2); line-height:1.45; }
+#dbody .hl b{ color:var(--ink); font-weight:650; }
+#dbody .acctline{ font-size:12.5px; font-weight:650; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+#dbody .src{ font-size:10.5px; color:var(--faint); }
+#dbody .mk{ background:rgba(138,31,45,.08); }
+.tag.mk{ background:rgba(138,31,45,.14); color:#7a1a27; border:1px dashed rgba(138,31,45,.5); }
+.mkpin{ }
+
+/* ---------- top bar ---------- */
+#top{
+  position:absolute; top:0; left:0; right:0; z-index:1000;
+  padding:11px 13px; display:flex; gap:9px; align-items:center; pointer-events:none;
+}
+#top > *{ pointer-events:auto; }
+.glass{
+  background:rgba(255,255,255,.93); backdrop-filter:saturate(1.7) blur(14px);
+  -webkit-backdrop-filter:saturate(1.7) blur(14px);
+  border-radius:var(--r-btn); box-shadow:var(--shadow-card); border:1px solid rgba(255,255,255,.7);
+}
+#search{ flex:1 1 auto; max-width:340px; display:flex; align-items:center; gap:7px; padding:0 11px; height:40px; }
+#search input{ border:0; background:none; width:100%; font-size:13.5px; }
+#search input:focus{ outline:none; }
+#search .ic{ color:var(--faint); font-size:13px; }
+#count{ height:40px; display:flex; align-items:center; padding:0 13px; font-size:13px; font-weight:600; gap:7px; }
+#count .dim{ color:var(--faint); font-weight:500; }
+#count .spin{ width:12px; height:12px; border:2px solid var(--hair); border-top-color:var(--navy); border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.tbtn{ height:40px; padding:0 13px; display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; border-radius:var(--r-btn); transition:background .16s; }
+.tbtn:hover{ background:rgba(255,255,255,.99); }
+.tbtn[aria-pressed="true"]{ background:var(--navy); color:#fff; }
+#top .spacer{ flex:1 1 auto; pointer-events:none; }
+#hud{
+  position:absolute; left:50%; transform:translateX(-50%); top:62px; z-index:900;
+  padding:6px 13px; font-size:11.5px; color:var(--muted); border-radius:var(--r-pill);
+  opacity:0; transition:opacity .3s var(--ease); pointer-events:none; white-space:nowrap; max-width:90%;
+  overflow:hidden; text-overflow:ellipsis;
+}
+#hud.show{ opacity:1; }
+
+/* ---------- list drawer ---------- */
+#list{
+  position:absolute; left:calc(var(--sidebar) + 13px); bottom:13px; width:322px; max-height:calc(100% - 128px);
+  display:flex; flex-direction:column; z-index:950; border-radius:var(--r-card);
+  overflow:hidden; transform:translateY(8px); opacity:0; pointer-events:none;
+  transition:transform .26s var(--ease), opacity .26s var(--ease);
+}
+#list.show{ transform:none; opacity:1; pointer-events:auto; }
+#listhead{ padding:12px 14px 10px; border-bottom:1px solid var(--hair2); flex:0 0 auto; }
+#listhead .n{ font-size:19px; font-weight:700; letter-spacing:-.02em; }
+#listhead .sub{ font-size:11.5px; color:var(--faint); margin-top:1px; }
+#listhead .row{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+#listhead .x{ color:var(--faint); font-size:16px; line-height:1; padding:4px 6px; }
+#rows{ overflow-y:auto; flex:1 1 auto; overscroll-behavior:contain; }
+.row{
+  padding:9px 12px 9px 14px; border-bottom:1px solid var(--hair2); display:flex; gap:9px;
+  align-items:flex-start; cursor:pointer; transition:background .13s;
+}
+.row:hover{ background:var(--sink); }
+.row.cur{ background:#eef4ff; box-shadow:inset 3px 0 0 var(--known); }
+.row.drop{ opacity:.38; }
+.row .tick{ flex:0 0 auto; width:16px; height:16px; border-radius:5px; border:1.5px solid var(--hair); margin-top:2px; display:grid; place-items:center; font-size:9px; color:#fff; transition:all .16s var(--ease); }
+.row:not(.drop) .tick{ background:var(--spoken); border-color:var(--spoken); }
+.row .tx{ flex:1; min-width:0; }
+.row .ad{ display:block; font-size:12.5px; font-weight:600; letter-spacing:-.01em; line-height:1.3; }
+.row .mt{ display:block; font-size:11px; color:var(--faint); margin-top:1px; font-variant-numeric:tabular-nums; }
+.row .kd{ flex:0 0 auto; font-size:11px; font-weight:700; color:var(--muted); padding:5px 8px; border-radius:8px; background:var(--sink); min-height:28px; }
+.row.drop .kd{ color:var(--green); }
+#stepbar{ padding:8px 14px; border-top:1px solid var(--hair2); font-size:11px; color:var(--faint); display:flex; justify-content:space-between; align-items:center; flex:0 0 auto; }
+kbd{ font:inherit; font-size:10px; background:var(--sink); border:1px solid var(--hair); border-bottom-width:2px; border-radius:4px; padding:1px 5px; color:var(--muted); }
+
+/* ---------- detail ---------- */
+#detail{
+  position:absolute; right:13px; top:62px; width:340px; max-height:calc(100% - 86px);
+  z-index:960; border-radius:var(--r-card); overflow:hidden; display:flex; flex-direction:column;
+  transform:translateX(12px); opacity:0; pointer-events:none;
+  transition:transform .26s var(--ease), opacity .22s var(--ease);
+}
+#detail.show{ transform:none; opacity:1; pointer-events:auto; }
+#dhead{ padding:13px 15px 11px; border-bottom:1px solid var(--hair2); position:relative; }
+#dhead .ad{ font-size:15px; font-weight:700; letter-spacing:-.02em; line-height:1.25; padding-right:26px; }
+#dhead .ct{ font-size:11.5px; color:var(--faint); margin-top:2px; }
+#dhead .x{ position:absolute; right:9px; top:9px; color:var(--faint); font-size:16px; line-height:1; padding:6px 8px; }
+#dbody{ overflow-y:auto; padding:0 0 11px; overscroll-behavior:contain; }
+.dsec{ padding:11px 15px; border-bottom:1px solid var(--hair2); }
+.dsec:last-child{ border-bottom:0; }
+.dsec h4{ font-size:10px; text-transform:uppercase; letter-spacing:.075em; color:var(--faint); margin:0 0 7px; font-weight:700; }
+.kv{ display:flex; justify-content:space-between; gap:12px; padding:2.5px 0; font-size:12.5px; }
+.kv dt{ color:var(--muted); flex:0 0 auto; }
+.kv dd{ margin:0; text-align:right; font-weight:600; font-variant-numeric:tabular-nums; }
+.kv dd.na{ color:var(--faint); font-weight:500; font-style:italic; }
+.tag{ display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:var(--r-pill); font-size:11px; font-weight:650; margin:0 5px 5px 0; }
+.tag.k{ background:rgba(10,122,255,.12); color:#0559b8; }
+.tag.s{ background:rgba(15,138,75,.13); color:#0b6b3a; }
+.tag.o{ background:rgba(184,147,58,.16); color:#7d6115; }
+.tag.d{ background:rgba(142,68,224,.12); color:#6a27b5; }
+.tag.x{ background:rgba(192,57,43,.12); color:#a02a1e; }
+.known{ background:#f6faff; }
+.dsec .note{ font-size:11.5px; color:var(--muted); line-height:1.45; }
+.dsec .own{ font-size:13px; font-weight:650; line-height:1.35; }
+.dsec .mail{ font-size:12px; color:var(--muted); margin-top:3px; }
+.act{
+  width:100%; min-height:40px; padding:9px 12px; border-radius:var(--r-btn); font-size:12.5px; font-weight:650;
+  background:var(--navy); color:#fff; display:flex; align-items:center; gap:8px;
+  transition:transform .14s var(--ease), filter .16s; box-shadow:0 1px 4px rgba(27,42,74,.22);
+}
+.act:hover{ filter:brightness(1.08); } .act:active{ transform:scale(.985); }
+.act.ghost{ background:var(--sink); color:var(--ink); box-shadow:none; }
+.act.ghost:hover{ background:#ebebe9; }
+.act + .act{ margin-top:6px; }
+
+/* ---------- purpose sheet ---------- */
+#scrim{
+  position:fixed; inset:0; z-index:2000; background:rgba(17,24,39,.34);
+  backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+  display:grid; place-items:center; padding:20px;
+  opacity:0; pointer-events:none; transition:opacity .24s var(--ease);
+}
+#scrim.show{ opacity:1; pointer-events:auto; }
+#sheet{
+  width:min(560px,100%); background:var(--panel); border-radius:var(--r-sheet);
+  box-shadow:var(--shadow-float); overflow:hidden; max-height:100%;
+  display:flex; flex-direction:column;
+  transform:translateY(14px) scale(.985); transition:transform .3s var(--ease);
+}
+#scrim.show #sheet{ transform:none; }
+#sheet header{ padding:20px 22px 4px; }
+#sheet h2{ margin:0; font-size:19px; font-weight:750; letter-spacing:-.025em; }
+#sheet .sh{ font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.45; }
+#sheetscroll{ overflow-y:auto; }
+#opts{ padding:14px 14px 10px; display:grid; gap:8px; }
+.opt{
+  display:flex; gap:12px; align-items:flex-start; text-align:left; width:100%;
+  padding:13px 14px; border-radius:var(--r-card); background:var(--panel);
+  border:1.5px solid var(--hair); transition:all .17s var(--ease); min-height:44px;
+}
+.opt:hover{ border-color:var(--navy); background:#fbfbfd; transform:translateY(-1px); box-shadow:var(--shadow-card); }
+.opt .ic{ font-size:19px; line-height:1.15; flex:0 0 auto; }
+.opt > span:last-child{ min-width:0; }
+.opt .t{ display:block; font-size:13.5px; font-weight:680; letter-spacing:-.01em; }
+.opt .d{ display:block; font-size:11.5px; color:var(--muted); margin-top:2px; line-height:1.42; }
+
+/* ---------- the sheet, inside the page ---------- */
+#sheetview{
+  position:fixed; inset:0; z-index:2500; background:rgba(17,24,39,.42); display:flex; flex-direction:column;
+  padding:22px; opacity:0; pointer-events:none; transition:opacity .22s var(--ease);
+}
+#sheetview.show{ opacity:1; pointer-events:auto; }
+#sheetview .svbar{
+  display:flex; justify-content:space-between; align-items:center; gap:10px; background:var(--navy); color:#fff;
+  padding:10px 16px; border-radius:14px 14px 0 0; font-weight:700; font-size:13.5px; flex:0 0 auto;
+}
+#sheetview .svacts{ display:flex; gap:8px; }
+#sheetview .svacts button{ min-height:36px; padding:6px 13px; border-radius:9px; background:rgba(255,255,255,.14); color:#fff; font-weight:700; font-size:12.5px; }
+#sheetview .svacts button:hover{ background:rgba(255,255,255,.24); }
+#sheetview iframe{ flex:1 1 auto; width:100%; border:0; background:#fff; border-radius:0 0 14px 14px; }
+@media (max-width:860px){ #sheetview{ padding:8px; } }
+
+/* ---------- coach (the walkthrough) ---------- */
+#coach{
+  position:absolute; right:13px; bottom:13px; width:330px; z-index:1500; border-radius:var(--r-card);
+  padding:14px 15px; background:var(--navy); color:#fff; box-shadow:var(--shadow-float);
+  transform:translateY(10px); opacity:0; pointer-events:none; transition:transform .3s var(--ease), opacity .25s var(--ease);
+}
+#coach.show{ transform:none; opacity:1; pointer-events:auto; }
+#coach .k{ font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--gold); font-weight:750; }
+#coach p{ margin:5px 0 0; font-size:13px; line-height:1.45; }
+#coach .cacts{ display:flex; gap:8px; margin-top:12px; align-items:center; }
+#coach .cgo{ flex:1; min-height:40px; border-radius:10px; background:#fff; color:var(--navy); font-weight:750; font-size:13px; }
+#coach .cskip{ color:rgba(255,255,255,.7); font-weight:600; font-size:12px; padding:8px 6px; }
+
+/* ---------- mobile ---------- */
+#mobtabs{ display:none; }
+@media (max-width:860px){
+  #shell{ grid-template-columns:1fr; }
+  #map{ position:absolute; inset:0 0 var(--tabh) 0; }
+  #side{
+    position:absolute; left:0; right:0; bottom:var(--tabh); top:auto; height:auto; max-height:74%;
+    z-index:1200; border-right:0; border-radius:18px 18px 0 0; box-shadow:0 -8px 30px rgba(17,24,39,.16);
+    transform:translateY(calc(100% - 88px)); transition:transform .32s var(--ease);
+  }
+  #side.open{ transform:none; }
+  #brand, #purposebar{ display:none; }
+  #peek{
+    display:flex; align-items:center; gap:10px; padding:10px 16px 8px; flex:0 0 auto; min-height:88px; cursor:pointer;
+    border-bottom:1px solid var(--hair2);
+  }
+  #peek .grab{ position:absolute; top:7px; left:50%; transform:translateX(-50%); width:36px; height:5px; border-radius:3px; background:var(--hair); }
+  #peek .pt{ flex:1; min-width:0; padding-top:8px; }
+  #peek .pk{ font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--yours); font-weight:750; }
+  #peek .pv{ font-size:15px; font-weight:750; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+  #peek .pn{ font-size:12px; color:var(--muted); margin-top:1px; }
+  #peek .pchev{ color:var(--faint); font-size:18px; padding-top:8px; transition:transform .3s; }
+  #side.open #peek .pchev{ transform:rotate(180deg); }
+  #peek .pbtn{ padding:9px 13px; border-radius:10px; background:var(--navy); color:#fff; font-weight:700; font-size:12.5px; margin-top:8px; min-height:40px; white-space:nowrap; }
+  #run{ padding-bottom:20px; }
+  #list{ left:9px; right:9px; width:auto; bottom:calc(var(--tabh) + 9px); max-height:60%; z-index:1250; }
+  #detail{ left:9px; right:9px; width:auto; top:auto; bottom:calc(var(--tabh) + 9px); max-height:66%; z-index:1260; }
+  #coach{ left:9px; right:9px; width:auto; bottom:auto; top:64px; }
+  #top{ padding:9px; }
+  #search{ max-width:none; }
+  .hidesm{ display:none !important; }
+  #mobtabs{
+    display:grid; grid-template-columns:repeat(5,1fr); position:absolute;
+    bottom:0; left:0; right:0; height:calc(var(--tabh) + env(safe-area-inset-bottom)); z-index:1300;
+    background:rgba(255,255,255,.96); backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px); border-top:1px solid var(--hair);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  #mobtabs button, #mobtabs a{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:10px; font-weight:600; color:var(--muted); text-decoration:none; min-height:44px; }
+  #mobtabs button .ic, #mobtabs a .ic{ font-size:17px; }
+  #mobtabs button[aria-pressed="true"]{ color:var(--navy); }
+  #mobtabs [hidden]{ display:none !important; }
+}
+@media (prefers-reduced-motion:reduce){
+  *{ transition-duration:.01ms !important; animation-duration:.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="shell">
+  <aside id="side">
+    <div id="brand">
+      <a id="hqback" href="https://claude.ai/code/artifact/c8b15f87-3aca-4407-925e-32218aaf24da#home" title="Back to Fox HQ">‹ Fox HQ</a>
+      <div class="mark">FFR</div>
+      <div>
+        <h1>Fox Atlas</h1>
+        <div class="sub" id="brandsub">loading the pond…</div>
+      </div>
+    </div>
+    <div id="peek">
+      <span class="grab"></span>
+      <div class="pt"><div class="pk" id="peekk">Fox Atlas</div><div class="pv" id="peekv">Your deals</div><div class="pn" id="peekn"></div></div>
+      <span class="pchev">⌃</span>
+    </div>
+    <div id="purposebar">
+      <button id="purposebtn" aria-haspopup="dialog">
+        <span class="ic" id="pic">🎯</span>
+        <span class="tx">
+          <span class="lbl">Run a play</span>
+          <span class="val" id="pval">Chase listings, find sites, look something up…</span>
+        </span>
+        <span class="chev">▾</span>
+      </button>
+    </div>
+    <div id="run">
+      <div id="home"></div>
+      <div id="acct" hidden></div>
+      <div id="runbody" hidden></div>
+      <details id="byhand"><summary>Adjust the filters by hand</summary><div id="filters"></div></details>
+    </div>
+  </aside>
+  <div id="map"></div>
+</div>
+
+<div id="top">
+  <div id="search" class="glass">
+    <span class="ic">⌕</span>
+    <input id="q" type="search" placeholder="Address, owner, city…" autocomplete="off" spellcheck="false">
+  </div>
+  <div id="count" class="glass"><span class="spin"></span><span class="dim">loading</span></div>
+  <div class="spacer"></div>
+  <button class="tbtn glass" id="btnbase" title="Map or aerial">◈ Aerial</button>
+  <button class="tbtn glass hidesm" id="btnradius">◎ Circle</button>
+  <button class="tbtn glass" id="btnlist">☰ List</button>
+</div>
+
+<div id="hud" class="glass"></div>
+
+<div id="list" class="glass">
+  <div id="listhead">
+    <div class="row" style="padding:0;border:0;cursor:default">
+      <div>
+        <div class="n tnum" id="lcount">0</div>
+        <div class="sub" id="lsub">in this list</div>
+      </div>
+      <button class="x" id="lclose" aria-label="Close list">✕</button>
+    </div>
+  </div>
+  <div id="rows"></div>
+  <div id="stepbar">
+    <span class="hidesm"><kbd>↑</kbd><kbd>↓</kbd> step</span>
+    <span class="hidesm"><kbd>space</kbd> drop</span>
+    <span id="keptn" class="tnum">0 kept</span>
+  </div>
+</div>
+
+<div id="detail" class="glass">
+  <div id="dhead">
+    <div class="ad" id="dad">—</div>
+    <div class="ct" id="dct"></div>
+    <button class="x" id="dclose" aria-label="Close">✕</button>
+  </div>
+  <div id="dbody"></div>
+</div>
+
+<div id="sheetview">
+  <div class="svbar"><span>The call sheet</span><span class="svacts"><button id="sheetcsv">Save as a spreadsheet</button><button id="sheetclose">Close</button></span></div>
+  <iframe title="Call sheet"></iframe>
+</div>
+
+<div id="coach">
+  <div class="k" id="coachk">How this works</div>
+  <p id="coachp"></p>
+  <div class="cacts"><button class="cgo" id="coachgo">Next</button><button class="cskip" id="coachskip">Skip</button></div>
+</div>
+
+<!-- The hub's tab bar, carried onto the map (2026-09-20): the map is a screen of Fox HQ, one tap there and one tap back.
+     The map's own Deals sheet still peeks above this bar and the List sits in the top bar; the two old tab buttons stay
+     in the markup, hidden, because the map's script binds them. -->
+<div id="mobtabs">
+  <a href="https://claude.ai/code/artifact/c8b15f87-3aca-4407-925e-32218aaf24da#home"><span class="ic">⌂</span>Home</a>
+  <a href="https://claude.ai/code/artifact/c8b15f87-3aca-4407-925e-32218aaf24da#ready"><span class="ic">➤</span>Ready</a>
+  <a href="https://claude.ai/code/artifact/c8b15f87-3aca-4407-925e-32218aaf24da#today"><span class="ic">◷</span>Today</a>
+  <a href="https://claude.ai/code/artifact/c8b15f87-3aca-4407-925e-32218aaf24da#clients"><span class="ic">▤</span>Clients</a>
+  <button id="tabmap" aria-pressed="true"><span class="ic">◉</span>Map</button>
+  <button id="tabrun" hidden><span class="ic">◆</span>Deals</button>
+  <button id="tablist" hidden><span class="ic">☰</span>List</button>
+</div>
+
+<div id="scrim" role="dialog" aria-modal="true" aria-labelledby="sheettitle">
+  <div id="sheet">
+    <header>
+      <h2 id="sheettitle">Run a play</h2>
+      <div class="sh">A play turns the map into a short, numbered run, and what the end buttons do depends on it. Your deals are on the map already; these are the shortcuts.</div>
+    </header>
+    <div id="sheetscroll">
+      <div id="opts"></div>
+      <div class="srlist" id="srlist"></div>
+      <div class="runs" id="runsdone"></div>
+      <button class="tourlink" id="tourbtn">Show me how this works (two minutes, real data)</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+"use strict";
+const MANIFEST = {"built":"2026-09-23T06:00:37","counties":[{"county":"Denver","parcels":17885,"file":"data/Denver.json.gz","bytes":709245},{"county":"Arapahoe","parcels":15222,"file":"data/Arapahoe.json.gz","bytes":562167},{"county":"Douglas","parcels":13527,"file":"data/Douglas.json.gz","bytes":435184},{"county":"Weld","parcels":12727,"file":"data/Weld.json.gz","bytes":490143},{"county":"Larimer","parcels":10752,"file":"data/Larimer.json.gz","bytes":445835},{"county":"El Paso","parcels":10505,"file":"data/El_Paso.json.gz","bytes":530702},{"county":"Boulder","parcels":9131,"file":"data/Boulder.json.gz","bytes":355794},{"county":"Adams","parcels":7246,"file":"data/Adams.json.gz","bytes":348289},{"county":"Jefferson","parcels":6650,"file":"data/Jefferson.json.gz","bytes":377758},{"county":"Pueblo","parcels":5260,"file":"data/Pueblo.json.gz","bytes":255964},{"county":"Broomfield","parcels":1231,"file":"data/Broomfield.json.gz","bytes":59054}],"parcels":110136,"overlay":{"file":"data/overlay.json.gz","flags":7124,"listings":5537,"bytes":317261}};
+const PURPOSES = [{"id":"listings","icon":"\ud83d\udccb","title":"Chase listings","blurb":"Landlord rep. Owner-occupied, long-held retail you have never spoken to, which is where listings actually come from.","listLabel":"owners worth a call","base":{"know":["hideoff"]},"steps":[{"kind":"ground","title":"Pick your ground","do":"Draw a circle around the piece of the Front Range you want to work this month.","why":"Everything after this only looks inside that circle, so the list you end with is one you can actually drive.","button":"Drop a circle where I'm looking","miles":3},{"kind":"narrow","title":"Narrow to the ones worth a call","do":"Keep the retail buildings whose tax bill goes to the building itself, held fifteen years or more, that you have never spoken to and that nobody is listing.","why":"An owner who occupies and has held that long is the likeliest listing in the file, and anything already on the market belongs to another broker.","button":"Show me those","set":{"assets":["retail"],"know":["owneropp","nospoken","hideoff","unlisted"],"heldYears":15},"min":1,"relax":["held","owneropp","wider","office"]},{"kind":"cull","title":"Cull it","do":"Step through them and drop the ones you do not want. Takes two minutes.","why":"Eight good calls beat eighty cold ones. Your eye on the map is the best filter in the building.","button":"Start stepping"},{"kind":"finish","title":"Do something with it","do":"Turn the ones you kept into work.","actions":[{"id":"sheet","label":"Build the call sheet"},{"id":"handoff","label":"Hand it to Fox to check and stage"},{"id":"copy","label":"Copy the list"}]}]},{"id":"site-search","icon":"\ud83d\udd0d","title":"Find sites for a client","blurb":"Tenant rep. Every retail building and piece of land in the client's territory, including the ones nobody is marketing.","listLabel":"candidate sites","base":{"know":["hideoff"]},"steps":[{"kind":"ground","title":"Mark the territory","do":"Draw a circle around where the client wants to be.","why":"A site search is head to head with every other tenant broker in that trade area, so the ground matters more than the filter.","button":"Drop a circle where I'm looking","miles":3},{"kind":"narrow","title":"Keep what could be their site","do":"Keep the retail buildings and the land inside it, minus anything you are not allowed to touch.","why":"Start with everything that could physically work. The market has not filtered it for you yet, and the sites nobody is marketing are the ones the other brokers cannot see.","button":"Show me those","set":{"assets":["retail","land"],"know":["hideoff"]},"min":1,"relax":["wider","office"]},{"kind":"narrow","title":"Size it to the client","do":"Put in the building size the client needs, or skip this.","why":"A site that cannot hold the box is not a site. Where a county has not given us sizes yet the map says so, and skipping keeps the list honest.","button":"Apply the size","inputs":["sf"],"skippable":true,"min":1,"relax":["size","wider"]},{"kind":"cull","title":"Drop what does not fit","do":"Step through and drop what does not fit the client.","why":"You know the client. The map does not.","button":"Start stepping"},{"kind":"finish","title":"Do something with it","do":"The ones on the market are marked with the listing broker. The rest need a broker call to find out.","actions":[{"id":"clientcsv","label":"Send to the client's site map"},{"id":"sheet","label":"Broker call sheet to confirm availability"},{"id":"copy","label":"Copy the shortlist"}]}]},{"id":"buyer","icon":"\ud83c\udff7\ufe0f","title":"Find a building for a buyer","blurb":"Owner-user or investment. Starts wide on every commercial type so nothing is filtered out before you have looked.","listLabel":"buildings to show","base":{"know":["hideoff"]},"steps":[{"kind":"ground","title":"Where they will look","do":"Draw a circle around where the buyer will look.","why":"Buyers say a city and mean a drive time. The circle is the drive time.","button":"Drop a circle where I'm looking","miles":5},{"kind":"narrow","title":"What kind of building","do":"Pick the kinds of building to show them.","why":"Start wide. A buyer's yes often comes from the type they did not ask for.","button":"Show me those","chips":"assets","set":{"know":["hideoff"]},"min":1,"relax":["wider","types"]},{"kind":"narrow","title":"Size and money","do":"Put in a size range and a value range, or skip this.","why":"The assessor's value runs under the real price, and it still keeps the list inside the buyer's range for free.","button":"Apply it","inputs":["sf","val"],"skippable":true,"min":1,"relax":["size","value","wider"]},{"kind":"cull","title":"Drop what you would not show them","do":"Step through and drop what you would not put in front of them.","why":"Your reputation rides on what you show a buyer, not on how many.","button":"Start stepping"},{"kind":"finish","title":"Do something with it","do":"Turn the ones you kept into a shortlist.","actions":[{"id":"sheet","label":"Shortlist to take to them"},{"id":"copy","label":"Copy the shortlist"}]}]},{"id":"lookup","icon":"\u2753","title":"Look something up","blurb":"Who owns that, what sold nearby, how big is it. Search an address and read the card.","listLabel":"properties","base":{},"steps":[{"kind":"lookup","title":"Find it","do":"Type the address or the owner's name, then tap the pin.","why":"Who owns it, what it is, what it last sold for, in one card. It is the county's record, so it answers who owns it, never who to call.","button":"Search"},{"kind":"finish","title":"Then","do":"Everything on the card came from the county assessor.","actions":[{"id":"copy","label":"Copy the details"},{"id":"portfolio","label":"Everything this owner holds"},{"id":"nearby","label":"What sold nearby"}]}]},{"id":"farm","icon":"\ud83c\udf31","title":"Work a trade area","blurb":"Book building. Draw your farm and see how much of it you have actually touched, so coverage is a number instead of a feeling.","listLabel":"owners not yet touched","base":{"know":["hideoff"]},"steps":[{"kind":"ground","title":"Draw your farm","do":"Draw a circle around the ground you want to own.","why":"A farm is ground you can cover by name. Small enough to own, big enough to feed you.","button":"Drop a circle where I'm looking","miles":2},{"kind":"measure","title":"See your coverage","do":"This is how much of that ground you have actually touched.","why":"Book building becomes a number you can move instead of a feeling.","button":"Measure it"},{"kind":"narrow","title":"Who you have never touched","do":"Keep the retail owners in the farm you have never spoken to.","why":"Coverage only moves when a stranger becomes a name.","button":"Show me those","set":{"assets":["retail"],"know":["nospoken","hideoff","unlisted"]},"min":1,"relax":["office","wider"]},{"kind":"cull","title":"Pick this month's introductions","do":"Step through and keep the ones you will actually go meet.","why":"Ten real conversations a month owns a farm in a year.","button":"Start stepping"},{"kind":"finish","title":"Do something with it","do":"Turn the ones you kept into work.","actions":[{"id":"sheet","label":"Call sheet for this farm"},{"id":"handoff","label":"Hand it to Fox to check and stage"},{"id":"copy","label":"Copy the list"}]}]}];
+const HANDOFF = {"form":null,"fields":{"run":null,"name":null}};          // how a copy off the Mac hands a run over
+const BOOKMARKLETS = {"crexi":"javascript:%28async%20%28%29%20%3D%3E%20%7B%0A%20%20if%20%28%21%2Fcrexi%5C.com%24%2F.test%28location.hostname%29%29%20%7B%20alert%28%22Open%20crexi.com%20first%20%28signed%20in%29%2C%20then%20click%20this%20bookmark.%22%29%3B%20return%3B%20%7D%0A%20%20const%20PORT%20%3D%204186%3B%0A%20%20const%20hud%20%3D%20document.createElement%28%22div%22%29%3B%0A%20%20hud.style.cssText%20%3D%20%22position%3Afixed%3Btop%3A12px%3Bright%3A12px%3Bz-index%3A2147483647%3Bbackground%3A%231b2a4a%3Bcolor%3A%23fff%3Bpadding%3A10px%2014px%3Bborder-radius%3A12px%3Bfont%3A13px%20-apple-system%2CHelvetica%3Bbox-shadow%3A0%208px%2024px%20rgba%280%2C0%2C0%2C.3%29%22%3B%0A%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20pulling%20lease%20listings%E2%80%A6%22%3B%0A%20%20document.body.appendChild%28hud%29%3B%0A%20%20const%20sleep%20%3D%20ms%20%3D%3E%20new%20Promise%28r%20%3D%3E%20setTimeout%28r%2C%20ms%29%29%3B%0A%20%20const%20items%20%3D%20new%20Map%28%29%3B%20let%20cells%20%3D%200%2C%20errors%20%3D%200%3B%0A%20%20const%20search%20%3D%20async%20%28box%2C%20from%29%20%3D%3E%20%7B%0A%20%20%20%20const%20r%20%3D%20await%20fetch%28%22https%3A%2F%2Fapi.crexi.com%2Funiversal-search%2Fv2%2Fsearch%22%2C%20%7B%20method%3A%20%22POST%22%2C%20credentials%3A%20%22include%22%2C%0A%20%20%20%20%20%20headers%3A%20%7B%20%22Content-Type%22%3A%20%22application%2Fjson%22%2C%20%22Accept%22%3A%20%22application%2Fjson%22%20%7D%2C%0A%20%20%20%20%20%20body%3A%20JSON.stringify%28%7B%20boundingBox%3A%20box%2C%20filters%3A%20%7B%7D%2C%20searchTypes%3A%20%5B%22Lease%22%5D%2C%20from%2C%20size%3A%20100%2C%0A%20%20%20%20%20%20%20%20sorting%3A%20%7B%20%22searchAttributes.crexiSearchRank%22%3A%20%22Descending%22%20%7D%2C%20excludeFilters%3A%20%5B%5D%2C%20excludeSort%3A%20%5B%5D%2C%20ids%3A%20%5B%5D%20%7D%29%20%7D%29%3B%0A%20%20%20%20if%20%28%21r.ok%29%20throw%20new%20Error%28%22search%20%22%20%2B%20r.status%29%3B%0A%20%20%20%20return%20r.json%28%29%3B%0A%20%20%7D%3B%0A%20%20const%20pullCell%20%3D%20async%20%28box%2C%20depth%29%20%3D%3E%20%7B%0A%20%20%20%20let%20first%3B%0A%20%20%20%20try%20%7B%20first%20%3D%20await%20search%28box%2C%200%29%3B%20%7D%20catch%20%28e%29%20%7B%20errors%2B%2B%3B%20return%3B%20%7D%0A%20%20%20%20const%20total%20%3D%20first.totalCount%20%7C%7C%200%3B%20cells%2B%2B%3B%0A%20%20%20%20if%20%28total%20%3E%201200%20%26%26%20depth%20%3C%205%29%20%7B%0A%20%20%20%20%20%20const%20mlat%20%3D%20%28box.latitudeMin%20%2B%20box.latitudeMax%29%20%2F%202%2C%20mlng%20%3D%20%28box.longitudeMin%20%2B%20box.longitudeMax%29%20%2F%202%3B%0A%20%20%20%20%20%20for%20%28const%20q%20of%20%5B%5Bbox.latitudeMin%2C%20mlat%2C%20box.longitudeMin%2C%20mlng%5D%2C%20%5Bmlat%2C%20box.latitudeMax%2C%20box.longitudeMin%2C%20mlng%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5Bbox.latitudeMin%2C%20mlat%2C%20mlng%2C%20box.longitudeMax%5D%2C%20%5Bmlat%2C%20box.latitudeMax%2C%20mlng%2C%20box.longitudeMax%5D%5D%29%0A%20%20%20%20%20%20%20%20await%20pullCell%28%7B%20latitudeMin%3A%20q%5B0%5D%2C%20latitudeMax%3A%20q%5B1%5D%2C%20longitudeMin%3A%20q%5B2%5D%2C%20longitudeMax%3A%20q%5B3%5D%20%7D%2C%20depth%20%2B%201%29%3B%0A%20%20%20%20%20%20return%3B%0A%20%20%20%20%7D%0A%20%20%20%20let%20got%20%3D%20first.items%20%7C%7C%20%5B%5D%3B%0A%20%20%20%20for%20%28let%20from%20%3D%20100%3B%20from%20%3C%20total%3B%20from%20%2B%3D%20100%29%20%7B%0A%20%20%20%20%20%20await%20sleep%28250%29%3B%0A%20%20%20%20%20%20try%20%7B%20const%20r%20%3D%20await%20search%28box%2C%20from%29%3B%20got%20%3D%20got.concat%28r.items%20%7C%7C%20%5B%5D%29%3B%20%7D%20catch%20%28e%29%20%7B%20errors%2B%2B%3B%20%7D%0A%20%20%20%20%7D%0A%20%20%20%20for%20%28const%20it%20of%20got%29%20if%20%28it%20%26%26%20it.id%29%20items.set%28String%28it.id%29%2C%20it%29%3B%0A%20%20%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20%22%20%2B%20items.size%20%2B%20%22%20lease%20listings%20so%20far%20%28%22%20%2B%20cells%20%2B%20%22%20map%20cells%29%E2%80%A6%22%3B%0A%20%20%7D%3B%0A%20%20%2F%2F%20The%20Front%20Range%2C%20Pueblo%20to%20Fort%20Collins%2C%20in%20eight%20cells%3B%20a%20busy%20cell%20splits%20itself.%0A%20%20const%20rows%20%3D%20%5B%5B38.15%2C%2038.75%5D%2C%20%5B38.75%2C%2039.35%5D%2C%20%5B39.35%2C%2039.95%5D%2C%20%5B39.95%2C%2040.75%5D%5D%2C%20cols%20%3D%20%5B%5B-105.45%2C%20-104.95%5D%2C%20%5B-104.95%2C%20-104.35%5D%5D%3B%0A%20%20for%20%28const%20r%20of%20rows%29%20for%20%28const%20c%20of%20cols%29%20await%20pullCell%28%7B%20latitudeMin%3A%20r%5B0%5D%2C%20latitudeMax%3A%20r%5B1%5D%2C%20longitudeMin%3A%20c%5B0%5D%2C%20longitudeMax%3A%20c%5B1%5D%20%7D%2C%200%29%3B%0A%20%20if%20%28%21items.size%29%20%7B%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20nothing%20came%20back.%20Are%20you%20signed%20in%20to%20Crexi%3F%22%3B%20return%3B%20%7D%0A%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20handing%20%22%20%2B%20items.size%20%2B%20%22%20listings%20to%20the%20Mac%E2%80%A6%22%3B%0A%20%20const%20f%20%3D%20document.createElement%28%22form%22%29%3B%0A%20%20f.method%20%3D%20%22POST%22%3B%20f.action%20%3D%20%22http%3A%2F%2Flocalhost%3A%22%20%2B%20PORT%20%2B%20%22%2Fapi%2Flease-form%22%3B%20f.target%20%3D%20%22_blank%22%3B%20f.style.display%20%3D%20%22none%22%3B%0A%20%20const%20add%20%3D%20%28n%2C%20v%29%20%3D%3E%20%7B%20const%20i%20%3D%20document.createElement%28%22input%22%29%3B%20i.type%20%3D%20%22hidden%22%3B%20i.name%20%3D%20n%3B%20i.value%20%3D%20v%3B%20f.appendChild%28i%29%3B%20%7D%3B%0A%20%20add%28%22items%22%2C%20JSON.stringify%28%5B...items.values%28%29%5D%29%29%3B%20add%28%22source%22%2C%20%22crexi-lease%22%29%3B%20add%28%22complete%22%2C%20errors%20%3F%20%22false%22%20%3A%20%22true%22%29%3B%0A%20%20document.body.appendChild%28f%29%3B%20f.submit%28%29%3B%0A%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20%22%20%2B%20items.size%20%2B%20%22%20lease%20listings%20handed%20over%22%20%2B%20%28errors%20%3F%20%22%20%28%22%20%2B%20errors%20%2B%20%22%20cells%20failed%2C%20nothing%20marked%20gone%29%22%20%3A%20%22%22%29%20%2B%20%22.%20The%20next%20refresh%20ingests%20them.%22%3B%0A%7D%29%28%29%3B","marketplace":"javascript:%28async%20%28%29%20%3D%3E%20%7B%0A%20%20if%20%28%21%2Ffacebook%5C.com%24%2F.test%28location.hostname%29%20%7C%7C%20%21%2Fmarketplace%2F.test%28location.pathname%29%29%20%7B%0A%20%20%20%20alert%28%22Open%20a%20Facebook%20Marketplace%20search%20page%20first%2C%20then%20click%20this%20bookmark.%22%29%3B%20return%3B%0A%20%20%7D%0A%20%20const%20PORT%20%3D%204186%3B%0A%20%20const%20hud%20%3D%20document.createElement%28%22div%22%29%3B%0A%20%20hud.style.cssText%20%3D%20%22position%3Afixed%3Btop%3A12px%3Bright%3A12px%3Bz-index%3A2147483647%3Bbackground%3A%231b2a4a%3Bcolor%3A%23fff%3Bpadding%3A10px%2014px%3Bborder-radius%3A12px%3Bfont%3A13px%20-apple-system%2CHelvetica%3Bbox-shadow%3A0%208px%2024px%20rgba%280%2C0%2C0%2C.3%29%22%3B%0A%20%20document.body.appendChild%28hud%29%3B%0A%20%20const%20sleep%20%3D%20ms%20%3D%3E%20new%20Promise%28r%20%3D%3E%20setTimeout%28r%2C%20ms%29%29%3B%0A%20%20const%20items%20%3D%20new%20Map%28%29%3B%0A%20%20const%20read%20%3D%20%28%29%20%3D%3E%20%7B%0A%20%20%20%20document.querySelectorAll%28%27a%5Bhref%2A%3D%22%2Fmarketplace%2Fitem%2F%22%5D%27%29.forEach%28a%20%3D%3E%20%7B%0A%20%20%20%20%20%20const%20m%20%3D%20%2F%5C%2Fmarketplace%5C%2Fitem%5C%2F%28%5Cd%2B%29%2F.exec%28a.getAttribute%28%22href%22%29%20%7C%7C%20%22%22%29%3B%20if%20%28%21m%29%20return%3B%0A%20%20%20%20%20%20const%20lines%20%3D%20%28a.innerText%20%7C%7C%20%22%22%29.split%28%22%5Cn%22%29.map%28s%20%3D%3E%20s.trim%28%29%29.filter%28Boolean%29%3B%0A%20%20%20%20%20%20if%20%28%21lines.length%29%20return%3B%0A%20%20%20%20%20%20const%20price%20%3D%20lines.find%28s%20%3D%3E%20%2F%5E%5C%24%7C%5EFree%24%2Fi.test%28s%29%29%20%7C%7C%20%22%22%3B%0A%20%20%20%20%20%20const%20rest%20%3D%20lines.filter%28s%20%3D%3E%20s%20%21%3D%3D%20price%29%3B%0A%20%20%20%20%20%20const%20title%20%3D%20rest%5B0%5D%20%7C%7C%20%22%22%3B%20const%20location%20%3D%20rest.find%28s%20%3D%3E%20%2F%2C%5Cs%2A%5BA-Z%5D%7B2%7D%24%2F.test%28s%29%29%20%7C%7C%20rest%5B1%5D%20%7C%7C%20%22%22%3B%0A%20%20%20%20%20%20const%20img%20%3D%20a.querySelector%28%22img%22%29%3B%0A%20%20%20%20%20%20items.set%28m%5B1%5D%2C%20%7B%20id%3A%20m%5B1%5D%2C%20href%3A%20%22https%3A%2F%2Fwww.facebook.com%2Fmarketplace%2Fitem%2F%22%20%2B%20m%5B1%5D%20%2B%20%22%2F%22%2C%20title%2C%20price%2C%20location%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20text%3A%20lines.join%28%22%20%7C%20%22%29%2C%20img%3A%20img%20%3F%20img.currentSrc%20%7C%7C%20img.src%20%3A%20null%2C%20query%3A%20new%20URLSearchParams%28location.search%29.get%28%22query%22%29%20%7C%7C%20%22%22%20%7D%29%3B%0A%20%20%20%20%7D%29%3B%0A%20%20%7D%3B%0A%20%20for%20%28let%20i%20%3D%200%3B%20i%20%3C%206%3B%20i%2B%2B%29%20%7B%20read%28%29%3B%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20%22%20%2B%20items.size%20%2B%20%22%20Marketplace%20cards%20so%20far%E2%80%A6%22%3B%20window.scrollBy%280%2C%201800%29%3B%20await%20sleep%28900%29%3B%20%7D%0A%20%20read%28%29%3B%0A%20%20if%20%28%21items.size%29%20%7B%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20no%20listing%20cards%20on%20this%20page.%20Run%20a%20Marketplace%20search%20first.%22%3B%20return%3B%20%7D%0A%20%20const%20f%20%3D%20document.createElement%28%22form%22%29%3B%0A%20%20f.method%20%3D%20%22POST%22%3B%20f.action%20%3D%20%22http%3A%2F%2Flocalhost%3A%22%20%2B%20PORT%20%2B%20%22%2Fapi%2Flease-form%22%3B%20f.target%20%3D%20%22_blank%22%3B%20f.style.display%20%3D%20%22none%22%3B%0A%20%20const%20add%20%3D%20%28n%2C%20v%29%20%3D%3E%20%7B%20const%20i%20%3D%20document.createElement%28%22input%22%29%3B%20i.type%20%3D%20%22hidden%22%3B%20i.name%20%3D%20n%3B%20i.value%20%3D%20v%3B%20f.appendChild%28i%29%3B%20%7D%3B%0A%20%20add%28%22items%22%2C%20JSON.stringify%28%5B...items.values%28%29%5D%29%29%3B%20add%28%22source%22%2C%20%22marketplace%22%29%3B%20add%28%22complete%22%2C%20%22false%22%29%3B%0A%20%20document.body.appendChild%28f%29%3B%20f.submit%28%29%3B%0A%20%20hud.textContent%20%3D%20%22Fox%20Atlas%3A%20handed%20%22%20%2B%20items.size%20%2B%20%22%20Marketplace%20listings%20to%20the%20Mac.%20The%20next%20refresh%20ingests%20them.%22%3B%0A%7D%29%28%29%3B"};  // the Crexi lease pull and the Marketplace pull, as javascript: links (2026-09-18)
+const LAYERS = {"Denver":{"url":"https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/arcgis/rest/services/ODC_PROP_PARCELS_A/FeatureServer/245","key":"SCHEDNUM","id":"parcel"},"Arapahoe":{"url":"https://gis.arapahoegov.com/arcgis/rest/services/CountyFeatureService/FeatureServer/14","key":"PARCEL_ID","id":"parcel"},"Douglas":{"url":"https://services.arcgis.com/seTexOicoRXDvRsJ/arcgis/rest/services/Parcels_A_view/FeatureServer/0","key":"STATE_PARCEL_NO","id":"parcel"},"Weld":{"url":"https://services.arcgis.com/ewjSqmSyHJnkfBLL/arcgis/rest/services/Parcels_open_data/FeatureServer/0","key":"PARCEL","id":"parcel"},"Larimer":{"url":"https://maps1.larimer.org/arcgis/rest/services/MapServices/Parcels/MapServer/3","key":"PARCELNUM","id":"parcel"},"Boulder":{"url":"https://maps.bouldercounty.org/arcgis/rest/services/PARCELS/PARCELS_OWNER/FeatureServer/0","key":"ParcelNo","id":"parcel"},"Adams":{"url":"https://services3.arcgis.com/4PNQOtAivErR7nbT/arcgis/rest/services/Parcels/FeatureServer/0","key":"PIN","id":"parcel"},"Jefferson":{"url":"https://gisportal.jeffco.us/server2/rest/services/Parcel/FeatureServer/20","key":"PIN","id":"parcel"},"Broomfield":{"url":"https://services1.arcgis.com/vXSRPZbyyOmH9pek/arcgis/rest/services/Parcels/FeatureServer/0","key":"PARCELNUMBER","id":"parcel"}};             // county parcel layers, for the outline on the aerial (2026-09-18)
+const FOX_EMAIL = "fox@foxfrontrange.com";
+const DATA_BASE = "data/";
+const RENDER_CAP = 1400;   // pins drawn at once; the rest wait for a zoom
+const MILE = 1609.34;
+const YEAR = new Date().getFullYear();
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const PHONE = () => matchMedia("(max-width: 860px)").matches;
+
+/* ---------------- state ---------------- */
+const S = {
+  rows: [],            // every loaded parcel, flat
+  counties: {},        // county -> {owners, cities, uses, zonings, mails, coverage}
+  filtered: [],
+  list: null,          // {items:[{r,kept}], cur:0}
+  purpose: null,
+  radius: null,        // {lat,lng,m}
+  sel: null,
+  q: "",
+  mac: false,          // served by serve.py on the Mac (so a run can be handed over)
+  portfolio: null,     // owner name when "everything this owner holds" is on
+  run: null,           // the guided run: {p, steps:[{spec,status,n,note,snap,vals}], i, name}
+  tour: null,          // {i} while the walkthrough is on
+  f: freshF(),
+  accounts: [],        // the deals record from foxhq-accounts.py (2026-09-18): one per deal, sites on the real status system
+  acct: null,          // the open account (its id), the map keyed to his own deal instead of the universe
+  acctThread: {}, acctGroup: {},
+  pick: null,          // {sel:{siteId:true}} while he is picking sites to present
+  know: {},            // pid -> what the vault knows (the overlay's know map)
+  sources: {},         // source -> {n, up, last}: how fresh each market source is
+  loose: [],           // Marketplace cards with no parcel to sit on (listed by city, never pinned)
+  byPid: {},           // pid -> {a, s}: the account site that sits on a parcel
+};
+function freshF(){
+  return { assets:new Set(), know:new Set(), sfMin:null, sfMax:null, acMin:null, acMax:null,
+           yrMin:null, yrMax:null, valMin:null, valMax:null, soldBefore:null, soldAfter:null,
+           county:null, owner:null };
+}
+function cloneF(f){ const o = {...f}; o.assets = new Set(f.assets); o.know = new Set(f.know); return o; }
+const F = { OWNER_OCC:1, OUT_STATE:2, KNOWN:4, SPOKEN:8, OFFLIMITS:16, ONDEAL:32, ONFILE:64, LISTED:128, DARK:256 };
+const A = { retail:1, office:2, industrial:4, land:8, multifamily:16 };
+const ALABEL = { retail:"Retail", office:"Office", industrial:"Industrial", land:"Land", multifamily:"Multifamily" };
+const C = { PID:0, LAT:1, LNG:2, SITUS:3, CITY:4, OWNER:5, ACRES:6, SF:7, YEAR:8,
+            USE:9, ZONE:10, SALED:11, SALEP:12, VAL:13, ASSETS:14, FLAGS:15, MAIL:16, LST:17 };
+const listingOf = r => S.counties[r.__c].listings[r[C.LST]] || null;
+function listingLine(l){
+  if (!l) return "";
+  const what = l.k === "lease" ? "For lease" : "For sale";
+  const bits = [what];
+  if (l.k === "lease" && l.r && l.r[0]) bits.push(`$${l.r[0]}${l.r[1] && l.r[1] !== l.r[0] ? "–$" + l.r[1] : ""}/sf`);
+  if (l.p) bits.push(money(l.p));
+  if (l.s) bits.push(fmt(l.s) + " sf");
+  if (l.b) bits.push("by " + l.b);
+  if (l.d) bits.push("since " + l.d);
+  return bits.join(" · ");
+}
+
+const $ = s => document.querySelector(s);
+const fmt = n => n==null ? null : n.toLocaleString("en-US");
+const money = n => n==null ? null : "$" + Math.round(n).toLocaleString("en-US");
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const plural = (n, one, many) => n === 1 ? one : (many || one + "s");
+const miles = m => (m/MILE).toFixed(m/MILE < 2 ? 1 : 0).replace(/\.0$/, "");
+const saleYear = r => r[C.SALED] ? parseInt(r[C.SALED].slice(0,4),10) : null;
+
+function animateNum(el, to){
+  if (!el) return;
+  const from = Number(el.dataset.v || 0);
+  el.dataset.v = to;
+  if (REDUCED || Math.abs(to-from) < 2){ el.textContent = fmt(to); return; }
+  const t0 = performance.now(), dur = 560;
+  const tick = t => {
+    const k = Math.min(1, (t-t0)/dur), e = 1 - Math.pow(1-k, 3);
+    el.textContent = fmt(Math.round(from + (to-from)*e));
+    if (k < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+/* ---------------- map ---------------- */
+const map = L.map("map", { zoomControl:true, preferCanvas:true, attributionControl:true })
+  .setView([39.55, -104.95], 10);
+const imagery = L.tileLayer(
+  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  { maxZoom:19, attribution:"Imagery: Esri" });
+const streets = L.tileLayer(
+  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+  { maxZoom:19, attribution:"Esri" });
+streets.addTo(map);
+let basemap = "streets";
+const canvas = L.canvas({ padding:0.4 });
+const layer = L.layerGroup().addTo(map);
+let radiusCircle = null;
+
+function pinColor(r){
+  const fl = r[C.FLAGS];
+  if (fl & F.OFFLIMITS) return "#c0392b";
+  if (fl & F.SPOKEN)    return "#0f8a4b";
+  if (fl & F.KNOWN)     return "#0a7aff";
+  if (fl & F.ONDEAL)    return "#8e44e0";
+  if (fl & F.OWNER_OCC) return "#b8933a";
+  return "#7b8694";
+}
+
+/* ---------------- loading ---------------- */
+async function loadCounty(c){
+  const res = await fetch(DATA_BASE + c.file.replace(/^data\//, ""));
+  if (!res.ok) throw new Error(c.county + ": " + res.status);
+  const buf = await res.arrayBuffer();
+  let txt;
+  try {
+    const ds = new DecompressionStream("gzip");
+    txt = await new Response(new Blob([buf]).stream().pipeThrough(ds)).text();
+  } catch(e){ txt = new TextDecoder().decode(buf); }
+  const p = JSON.parse(txt);
+  S.counties[p.county] = {
+    owners:p.owners, cities:p.cities, uses:p.uses, zonings:p.zonings, mails:p.mails || [null],
+    listings:p.listings || [null], coverage:p.coverage, pulled:p.pulled,
+  };
+  for (const row of p.rows){ row.__c = p.county; S.rows.push(row); }
+}
+
+async function loadGz(path){
+  const res = await fetch(DATA_BASE + path);
+  if (!res.ok) throw new Error(path + ": " + res.status);
+  const buf = await res.arrayBuffer();
+  let txt;
+  try {
+    const ds = new DecompressionStream("gzip");
+    txt = await new Response(new Blob([buf]).stream().pipeThrough(ds)).text();
+  } catch(e){ txt = new TextDecoder().decode(buf); }
+  return JSON.parse(txt);
+}
+async function loadOverlay(){
+  // The day's layer over the assessor base: what the vault knows about each parcel and what is
+  // on the market. The base files only change when the pond is reloaded; this one changes daily.
+  const ov = await loadGz("overlay.json.gz");
+  const shared = ov.listings || [null];
+  for (const c of Object.values(S.counties)) c.listings = shared;
+  let n = 0;
+  for (const r of S.rows){
+    const f = ov.flags[r[C.PID]]; if (f){ r[C.FLAGS] |= f; n++; }
+    const l = ov.lst[r[C.PID]]; if (l) r[C.LST] = l;
+  }
+  S.overlayBuilt = ov.built;
+  S.know = ov.know || {};
+  S.sources = ov.sources || {};
+  S.loose = ov.loose || [];
+  return n;
+}
+async function loadAccounts(){
+  try {
+    const j = await loadGz("accounts.json.gz");
+    S.accounts = (j && j.accounts) || [];
+  } catch(e){ console.warn("accounts", e); S.accounts = []; S.accountsMissing = true; }
+  S.byPid = {};
+  for (const a of S.accounts) for (const s of (a.sites || [])) if (s.pid && !S.byPid[s.pid]) S.byPid[s.pid] = { a, s };
+}
+async function boot(){
+  fetch("/api/health").then(r => r.ok ? r.json() : null).then(j => { S.mac = !!(j && j.ok); }).catch(() => { S.mac = false; });
+  const list = MANIFEST.counties.filter(c => c.parcels > 0);
+  let done = 0;
+  for (const c of list){
+    try { await loadCounty(c); } catch(e){ console.warn(e); }
+    done++;
+    $("#brandsub").textContent = `${fmt(S.rows.length)} properties · ${done}/${list.length} counties`;
+  }
+  try { await loadOverlay(); } catch(e){ console.warn("overlay", e); }
+  await loadAccounts();
+  $("#brandsub").textContent = `${fmt(S.rows.length)} commercial properties · ${Object.keys(S.counties).length} counties`;
+  buildFilters();
+  renderHome();
+  renderRun();
+  apply();
+  routeHash();
+  window.addEventListener("hashchange", routeHash);
+}
+/* Opens as a real map (Andrew, 2026-09-18: "I hated that I was forced to pick between four different options").
+   #deal/<id> opens his deal; #p/<pid> opens a property card; a play is a shortcut he reaches for. */
+function routeHash(){
+  const h = location.hash.replace(/^#/, "");
+  let m;
+  if ((m = /^deal\/([\w-]+)/.exec(h))){ if (S.accounts.some(a => a.id === m[1])) openAccount(m[1]); return; }
+  if ((m = /^p\/(.+)$/.exec(h))){ const pid = decodeURIComponent(m[1]); const r = S.rows.find(x => x[C.PID] === pid); if (r){ map.setView([r[C.LAT], r[C.LNG]], 16, { animate:false }); showDetail(r); } return; }
+  if (h === "plays") openSheet();
+}
+
+/* ---------------- filtering ---------------- */
+function haversine(a,b,c,d){
+  const R=6371000, t=Math.PI/180;
+  const x=(c-a)*t, y=(d-b)*t;
+  const h=Math.sin(x/2)**2 + Math.cos(a*t)*Math.cos(c*t)*Math.sin(y/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function inGround(r, f, radius){
+  if (S.portfolio) return true;
+  if (f.county && r.__c !== f.county) return false;
+  if (radius && haversine(radius.lat, radius.lng, r[C.LAT], r[C.LNG]) > radius.m) return false;
+  return true;
+}
+function matches(r, f = S.f, radius = S.radius, q = S.q){
+  const fl = r[C.FLAGS];
+  if (S.acct) return false;                   // in the account view the deal's own sites are the pins (draw()), not the parcels
+  if (!inGround(r, f, radius)) return false;
+  if (S.portfolio != null){
+    if ((S.counties[r.__c].owners[r[C.OWNER]] || "") !== S.portfolio) return false;
+    return true;
+  }
+  if (f.assets.size){
+    let hit = false;
+    for (const a of f.assets) if (r[C.ASSETS] & A[a]) { hit = true; break; }
+    if (!hit) return false;
+  }
+  for (const k of f.know){
+    if (k === "owneropp"  && !(fl & F.OWNER_OCC)) return false;
+    if (k === "outstate"  && !(fl & F.OUT_STATE)) return false;
+    if (k === "known"     && !(fl & F.KNOWN))     return false;
+    if (k === "spoken"    && !(fl & F.SPOKEN))    return false;
+    if (k === "nospoken"  &&  (fl & F.SPOKEN))    return false;
+    if (k === "ondeal"    && !(fl & F.ONDEAL))    return false;
+    if (k === "hideoff"   &&  (fl & F.OFFLIMITS)) return false;
+    if (k === "listed"    && !(fl & F.LISTED))    return false;
+    if (k === "unlisted"  &&  (fl & F.LISTED))    return false;
+    if (k === "dark"      && !(fl & F.DARK))      return false;
+  }
+  const sf = r[C.SF];
+  if (f.sfMin != null && (sf == null || sf < f.sfMin)) return false;
+  if (f.sfMax != null && (sf == null || sf > f.sfMax)) return false;
+  const ac = r[C.ACRES];
+  if (f.acMin != null && (ac == null || ac < f.acMin)) return false;
+  if (f.acMax != null && (ac == null || ac > f.acMax)) return false;
+  const yr = r[C.YEAR];
+  if (f.yrMin != null && (yr == null || yr < f.yrMin)) return false;
+  if (f.yrMax != null && (yr == null || yr > f.yrMax)) return false;
+  const v = r[C.VAL];
+  if (f.valMin != null && (v == null || v < f.valMin)) return false;
+  if (f.valMax != null && (v == null || v > f.valMax)) return false;
+  if (f.soldBefore != null || f.soldAfter != null){
+    const y = saleYear(r);
+    if (y == null) return false;
+    if (f.soldBefore != null && y > f.soldBefore) return false;
+    if (f.soldAfter != null && y < f.soldAfter) return false;
+  }
+  if (q){
+    const t = S.counties[r.__c];
+    const hay = (r[C.SITUS] + " " + (t.owners[r[C.OWNER]]||"") + " " +
+                 (t.cities[r[C.CITY]]||"")).toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  return true;
+}
+function countWith(f, radius){ let n = 0; for (const r of S.rows) if (matches(r, f, radius, "")) n++; return n; }
+
+let applyTimer = null;
+function apply(){ clearTimeout(applyTimer); applyTimer = setTimeout(applyNow, 16); }
+function applyNow(){
+  S.filtered = S.rows.filter(r => matches(r));
+  draw();
+  let n = S.filtered.length, word = n === 1 ? "property" : "properties";
+  if (S.acct){ const a = acctById(S.acct); n = a ? sitesOf(a).filter(s => s.lat != null).length : 0; word = n === 1 ? "site on the map" : "sites on the map"; }
+  const cnt = $("#count");
+  if (!cnt.querySelector(".num")) cnt.innerHTML = `<span class="tnum num" data-v="0">0</span><span class="dim"></span>`;
+  animateNum(cnt.querySelector(".num"), n);
+  cnt.querySelector(".dim").textContent = word;
+  document.querySelectorAll(".fg").forEach(g => {
+    const on = g.querySelector('[aria-pressed="true"]') ||
+               [...g.querySelectorAll("input")].some(i => i.value !== "");
+    g.classList.toggle("on", !!on);
+  });
+  if (S.run) liveRunNumbers();
+  renderPeek();
+}
+
+function draw(){
+  layer.clearLayers();
+  const b = map.getBounds();
+  let inView = S.filtered.filter(r => b.contains([r[C.LAT], r[C.LNG]]));
+  const over = inView.length > RENDER_CAP;
+  if (over){
+    const cen = map.getCenter();
+    inView = inView
+      .map(r => [haversine(cen.lat, cen.lng, r[C.LAT], r[C.LNG]), r])
+      .sort((x,y) => x[0]-y[0]).slice(0, RENDER_CAP).map(x => x[1]);
+  }
+  const z = map.getZoom();
+  const rad = z >= 16 ? 7 : z >= 14 ? 5.5 : z >= 12 ? 4 : 3;
+  for (const r of inView){
+    const listed = r[C.FLAGS] & F.LISTED, dark = r[C.FLAGS] & F.DARK;
+    const hit = S.byPid[r[C.PID]], lst = listed ? listingOf(r) : null, mk = !!(lst && lst.src === "marketplace");
+    let opt;
+    if (mk){
+      // owner-posted and unverified: drawn apart from the Crexi and LoopNet listings (Andrew: "probably separated somehow")
+      opt = { renderer:canvas, radius: rad + 1.5, weight: 2, color: "#8a1f2d", dashArray: "2 3", fillColor: "#ffffff", fillOpacity: .9, opacity: 1 };
+    } else {
+      opt = { renderer:canvas, radius: listed ? rad + 1.5 : rad, weight: listed ? 2.2 : (dark ? 2 : 1.2),
+              color: listed ? "#8a1f2d" : (dark ? "#111827" : "#fff"), fillColor:pinColor(r), fillOpacity:.92, opacity: listed ? 1 : .85 };
+    }
+    const m = L.circleMarker([r[C.LAT], r[C.LNG]], opt);
+    m.__r = r;
+    m.on("click", () => showDetail(r));
+    layer.addLayer(m);
+  }
+  if (S.acct){
+    // his deal's sites, from the deal's own record: the real status colour, hollow for a site identified but not on
+    // the client's sheet yet. A site with no sourced coordinate has no pin; it is in the list marked "no pin".
+    const a = acctById(S.acct);
+    for (const s of (a ? sitesOf(a) : [])){
+      if (s.lat == null || s.lng == null) continue;
+      const st = s.status;
+      const m = L.circleMarker([s.lat, s.lng], { renderer:canvas, radius: rad + 4, weight: st.hollow ? 2.2 : 2, color: st.hollow ? "#1b2a4a" : "#fff",
+        dashArray: st.hollow ? "3 3" : null, fillColor: st.hollow ? "#ffffff" : st.color, fillOpacity: st.hollow ? .6 : .95, opacity: 1 });
+      m.on("click", () => { const r = s.pid ? S.rows.find(x => x[C.PID] === s.pid) : null; if (r) showDetail(r); else showSite(a, s); renderAcct(); });
+      layer.addLayer(m);
+    }
+  }
+  const hud = $("#hud");
+  if (over){
+    hud.textContent = `Showing the ${fmt(RENDER_CAP)} nearest of ${fmt(S.filtered.length)} — zoom in for the rest`;
+    hud.classList.add("show");
+  } else if (S.filtered.length && !inView.length){
+    hud.textContent = "None of the matches are in view — zoom out";
+    hud.classList.add("show");
+  } else hud.classList.remove("show");
+}
+map.on("moveend zoomend", draw);
+
+/* ---------------- by-hand filters ---------------- */
+function countFor(test){ let n=0; for (const r of S.rows) if (test(r)) n++; return n; }
+function sizeless(countyNames){
+  return (countyNames || Object.keys(S.counties)).filter(n => ((S.counties[n]?.coverage?.bldg_sf?.have) || 0) === 0);
+}
+function buildFilters(){
+  const el = $("#filters");
+  const assetRow = Object.keys(A).map(a => {
+    const n = countFor(r => r[C.ASSETS] & A[a]);
+    if (!n) return "";
+    return `<button class="chip" data-f="asset" data-v="${a}" aria-pressed="false">${ALABEL[a]}<span class="n tnum">${fmt(n)}</span></button>`;
+  }).join("");
+  const knowDefs = [
+    ["owneropp","Owner occupied","o", r => r[C.FLAGS] & F.OWNER_OCC],
+    ["outstate","Out of state","", r => r[C.FLAGS] & F.OUT_STATE],
+    ["known","I know the owner","k", r => r[C.FLAGS] & F.KNOWN],
+    ["spoken","I've spoken to them","s", r => r[C.FLAGS] & F.SPOKEN],
+    ["nospoken","Never spoken","", r => !(r[C.FLAGS] & F.SPOKEN)],
+    ["ondeal","On a deal","", r => r[C.FLAGS] & F.ONDEAL],
+    ["hideoff","Hide off limits","x", r => !(r[C.FLAGS] & F.OFFLIMITS)],
+    ["listed","On the market","m", r => r[C.FLAGS] & F.LISTED],
+    ["unlisted","Not listed","", r => !(r[C.FLAGS] & F.LISTED)],
+    ["dark","Just went dark","", r => r[C.FLAGS] & F.DARK],
+  ];
+  const knowRow = knowDefs.map(([v,label,cls,test]) => {
+    const n = countFor(test);
+    return `<button class="chip ${cls}" data-f="know" data-v="${v}" aria-pressed="false">${label}<span class="n tnum">${fmt(n)}</span></button>`;
+  }).join("");
+  const sizeCov = sizeless();
+  const sizeWarn = sizeCov.length
+    ? `<div class="hint warn">No building size on file yet for ${sizeCov.join(", ")}, so a size filter hides those counties entirely.</div>` : "";
+  const countyOpts = Object.keys(S.counties).sort().map(c => `<option value="${c}">${c}</option>`).join("");
+
+  el.innerHTML = `
+    <div class="fg"><h3>County <button class="clr" data-clear="county">clear</button></h3>
+      <select id="county" class="range" style="width:100%;padding:8px 9px;border-radius:9px;background:var(--sink);border:1px solid transparent;min-height:38px"><option value="">every county</option>${countyOpts}</select></div>
+    <div class="fg"><h3>Property type <button class="clr" data-clear="asset">clear</button></h3>
+      <div class="chips">${assetRow}</div></div>
+    <div class="fg"><h3>What you know <button class="clr" data-clear="know">clear</button></h3>
+      <div class="chips">${knowRow}</div>
+      <div class="hint">Owner occupied means the tax bill goes to the building itself. That is the strongest listing tell in the file. On the market is Crexi's active for-sale feed plus any lease pull; just went dark is a listing that came down in the last 90 days, the warmest cold call there is.</div></div>
+    <div class="fg"><h3>Building size <button class="clr" data-clear="sf">clear</button></h3>
+      <div class="range"><input id="sfMin" type="number" placeholder="min sf" inputmode="numeric"><span>to</span><input id="sfMax" type="number" placeholder="max sf" inputmode="numeric"></div>
+      ${sizeWarn}</div>
+    <div class="fg"><h3>Land <button class="clr" data-clear="ac">clear</button></h3>
+      <div class="range"><input id="acMin" type="number" step="0.1" placeholder="min acres"><span>to</span><input id="acMax" type="number" step="0.1" placeholder="max acres"></div></div>
+    <div class="fg"><h3>Year built <button class="clr" data-clear="yr">clear</button></h3>
+      <div class="range"><input id="yrMin" type="number" placeholder="from"><span>to</span><input id="yrMax" type="number" placeholder="to"></div></div>
+    <div class="fg"><h3>Assessor value <button class="clr" data-clear="val">clear</button></h3>
+      <div class="range"><input id="valMin" type="number" placeholder="min $"><span>to</span><input id="valMax" type="number" placeholder="max $"></div></div>
+    <div class="fg"><h3>Last sale <button class="clr" data-clear="sold">clear</button></h3>
+      <div class="range"><input id="soldBefore" type="number" placeholder="held since, e.g. 2011"><span>·</span><input id="soldAfter" type="number" placeholder="sold since, e.g. 2023"></div>
+      <div class="hint">A long hold with no sale is the tired-owner tell. Sold since is a comp set.</div></div>
+  `;
+  el.addEventListener("click", e => {
+    const chip = e.target.closest(".chip");
+    if (chip){ toggleChip(chip); apply(); return; }
+    const clr = e.target.closest(".clr");
+    if (clr) clearGroup(clr.dataset.clear);
+  });
+  el.addEventListener("input", e => {
+    const id = e.target.id;
+    if (!id) return;
+    if (id === "county"){ S.f.county = e.target.value || null; if (S.f.county) setRadius(null); apply(); return; }
+    const v = e.target.value === "" ? null : Number(e.target.value);
+    S.f[id] = Number.isFinite(v) ? v : null;
+    apply();
+  });
+}
+function toggleChip(chip){
+  const on = chip.getAttribute("aria-pressed") === "true";
+  chip.setAttribute("aria-pressed", on ? "false" : "true");
+  const set = chip.dataset.f === "asset" ? S.f.assets : S.f.know;
+  on ? set.delete(chip.dataset.v) : set.add(chip.dataset.v);
+}
+function clearGroup(g){
+  const map_ = { sf:["sfMin","sfMax"], ac:["acMin","acMax"], yr:["yrMin","yrMax"],
+                 val:["valMin","valMax"], sold:["soldBefore","soldAfter"] };
+  if (g === "asset" || g === "know"){
+    (g === "asset" ? S.f.assets : S.f.know).clear();
+  } else if (g === "county"){ S.f.county = null; }
+  else { for (const id of map_[g] || []) S.f[id] = null; }
+  syncFilterUI(); apply();
+}
+function syncFilterUI(){
+  document.querySelectorAll('.chip[data-f]').forEach(c => {
+    const set = c.dataset.f === "asset" ? S.f.assets : S.f.know;
+    c.setAttribute("aria-pressed", set.has(c.dataset.v) ? "true" : "false");
+  });
+  for (const id of ["sfMin","sfMax","acMin","acMax","yrMin","yrMax","valMin","valMax","soldBefore","soldAfter"]){
+    const n = $("#filters #"+id); if (n) n.value = S.f[id] == null ? "" : S.f[id];
+  }
+  const cs = $("#county"); if (cs) cs.value = S.f.county || "";
+}
+
+/* ---------------- detail ---------------- */
+function showDetail(r){
+  S.sel = r;
+  const t = S.counties[r.__c];
+  const fl = r[C.FLAGS];
+  $("#dad").textContent = r[C.SITUS] || "(no street address on file)";
+  $("#dct").textContent = [t.cities[r[C.CITY]], r.__c + " County"].filter(Boolean).join(" · ");
+
+  const kv = (k, v, na) => `<div class="kv"><dt>${k}</dt><dd class="${v==null?"na":""}">${v==null?(na||"not on file"):esc(v)}</dd></div>`;
+  const tags = [];
+  if (fl & F.OFFLIMITS) tags.push('<span class="tag x">Off limits</span>');
+  if (fl & F.ONDEAL)    tags.push('<span class="tag d">On a deal</span>');
+  if (fl & F.SPOKEN)    tags.push('<span class="tag s">You have spoken</span>');
+  else if (fl & F.KNOWN) tags.push('<span class="tag k">You know them</span>');
+  if (fl & F.OWNER_OCC) tags.push('<span class="tag o">Owner occupied</span>');
+  if (fl & F.ONFILE)    tags.push('<span class="tag k">On file</span>');
+  if (fl & F.LISTED)    tags.push('<span class="tag m">On the market</span>');
+  if (fl & F.DARK)      tags.push('<span class="tag g">Went dark</span>');
+  const lst = listingOf(r);
+  const mk = !!(lst && lst.src === "marketplace");
+  if (mk) tags.push('<span class="tag mk">Marketplace, owner-posted</span>');
+  const srcWord = lst ? ({ "crexi-sale":"Crexi", "crexi-lease":"Crexi", "crexi-lease-alert":"a Crexi alert email", "loopnet":"LoopNet", "showcase":"the LoopNet inventory (Showcase)", "marketplace":"Facebook Marketplace" }[lst.src] || lst.src || "") : "";
+  const marketSec = lst ? `<div class="dsec ${mk ? "mk" : ""}"><h4>${(fl & F.LISTED) ? (mk ? "Posted on Marketplace" : "On the market") : "Was on the market"}</h4>
+      <div style="font-size:12.5px;font-weight:600;line-height:1.4">${esc(listingLine(lst))}${lst.g ? ` · came down ${esc(lst.g)}` : ""}</div>
+      ${lst.u ? `<div class="note" style="margin-top:4px"><a href="${esc(lst.u)}" target="_blank" rel="noopener" style="color:var(--yours);font-weight:600">Open the listing</a>${srcWord ? ` <span class="src">· ${esc(srcWord)}</span>` : ""}</div>` : ""}
+      ${mk ? '<div class="note" style="margin-top:5px">Posted by the owner or someone acting for them, unverified. Warm, not cold: they already raised a hand.</div>' : (fl & F.LISTED) ? '<div class="note" style="margin-top:5px">Another broker holds this. Intro or co-op only, never a pitch to the owner.</div>' : '<div class="note" style="margin-top:5px">A listing that came down and did not sell is the warmest cold call there is.</div>'}
+    </div>` : "";
+  const photo = lst && lst.i ? `<img class="photo" src="${esc(lst.i)}" alt="" loading="lazy" onerror="this.remove()">` : "";
+  const hit = S.byPid[r[C.PID]];
+  const acctSec = hit ? acctSection(hit.a, hit.s) : "";
+  const kn = S.know[r[C.PID]];
+  const knowSec = kn ? `<div class="dsec known"><h4>What you know</h4>
+      ${kn.n ? kv("On file as", kn.n) : ""}${kn.ls ? kv("Status on file", kn.ls) : ""}${kn.co ? kv("Owner is", kn.co + (kn.t ? " (tier " + kn.t + ")" : "")) : ""}
+      ${kn.c && kn.c.length ? kv("You know", kn.c.join(", ")) : ""}${kn.l ? kv("Last spoke", kn.l) : ""}${kn.d && kn.d.length ? kv("On deals", kn.d.join(", ")) : ""}
+      ${kn.x ? `<div class="note" style="color:var(--accent);font-weight:650;margin-top:4px">Off limits: ${esc(kn.x)}</div>` : ""}
+    </div>` : "";
+  const sale = r[C.SALED] ? `${r[C.SALED]}${r[C.SALEP] ? " · " + money(r[C.SALEP]) : ""}` : null;
+  const held = saleYear(r) != null ? `${YEAR - saleYear(r)} years (since ${saleYear(r)})` : null;
+  const mail = t.mails[r[C.MAIL]] || null;
+  const inList = S.list && S.list.items.find(i => i.r[C.PID] === r[C.PID]);
+
+  $("#dbody").innerHTML = `
+    ${photo}
+    ${acctSec}
+    ${tags.length ? `<div class="dsec known">${tags.join("")}
+      ${(fl & F.OUT_STATE) ? '<div class="note">Owner mails out of state.</div>' : ""}</div>` : ""}
+    ${knowSec}
+    ${marketSec}
+    <div class="dsec"><h4>Owner of record</h4>
+      <div class="own">${esc(t.owners[r[C.OWNER]] || "not on file")}</div>
+      ${mail ? `<div class="mail">Mails to ${esc(mail)}</div>` : ""}
+      <div class="note" style="margin-top:6px">The county assessor's answer to who owns it. Not who to call: an entity gets pierced before a name is used.</div>
+    </div>
+    <div class="dsec"><h4>Property</h4>
+      ${kv("Building", r[C.SF] ? fmt(r[C.SF]) + " sf" : null, "county has not supplied sizes")}
+      ${kv("Land", r[C.ACRES] != null ? r[C.ACRES].toFixed(2) + " ac" : null)}
+      ${kv("Year built", r[C.YEAR])}
+      ${kv("Use", t.uses[r[C.USE]])}
+      ${kv("Zoning", t.zonings[r[C.ZONE]])}
+    </div>
+    <div class="dsec"><h4>Money</h4>
+      ${kv("Assessor value", money(r[C.VAL]))}
+      ${kv("Last sale", sale)}
+      ${kv("Held", held, "no sale on record")}
+    </div>
+    <div class="dsec"><h4>Aerial</h4><div class="mini" id="mini"></div><div class="note" style="margin-top:4px" id="mininote">The parcel, outlined on the county's own imagery layer where the county publishes one.</div></div>
+    <div class="dsec"><h4>Do</h4><div id="dacts"></div></div>
+  `;
+  miniAerial(r);
+  const acts = $("#dacts");
+  acts.innerHTML =
+    (inList ? `<button class="act ${inList.kept ? "ghost" : ""}" data-a="keep">${inList.kept ? "⊘ Drop it from the list" : "✓ Keep it"}</button>`
+            : `<button class="act ghost" data-a="addlist">＋ Add to the list</button>`) +
+    `<button class="act ghost" data-a="portfolio">⌂ Everything this owner holds</button>` +
+    `<button class="act ghost" data-a="nearby">◎ What sold nearby</button>` +
+    `<button class="act ghost" data-a="copy">⧉ Copy the details</button>`;
+  wireSiteActs(hit ? hit.a : null, hit ? hit.s : null, r);
+  acts.onclick = e => {
+    const b = e.target.closest("[data-a]"); if (!b) return;
+    if (b.dataset.a === "addlist") addToList([r]);
+    if (b.dataset.a === "keep"){ const it = S.list.items.find(i => i.r[C.PID] === r[C.PID]); it.kept = !it.kept; renderList(); showDetail(r); }
+    if (b.dataset.a === "copy") copyDetail(r);
+    if (b.dataset.a === "portfolio") showPortfolio(r);
+    if (b.dataset.a === "nearby") showNearby(r);
+  };
+  $("#detail").classList.add("show");
+  try { if (!S.acct) history.replaceState(null, "", "#p/" + encodeURIComponent(r[C.PID])); } catch(e){}
+  if (S.run && cur()?.spec.kind === "lookup" && cur().status === "cur"){
+    completeStep(1, r[C.SITUS] || "found");
+  }
+  if (S.acct) renderAcct();
+}
+$("#dclose").onclick = () => { $("#detail").classList.remove("show"); S.sel = null; if (S.acct) renderAcct(); };
+/* The aerial with the parcel outlined (2026-09-18): the county's own parcel layer answers a geometry query for
+   this parcel number; Esri imagery underneath. A county with no public layer, or a query that fails, shows the
+   imagery centred on the pin and says so. Never a drawn guess. */
+let miniMap = null;
+function miniAerial(r){
+  const el = $("#mini"); if (!el) return;
+  if (miniMap){ try { miniMap.remove(); } catch(e){} miniMap = null; }
+  miniMap = L.map(el, { zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false, doubleClickZoom:false, boxZoom:false, keyboard:false, touchZoom:false });
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom:19 }).addTo(miniMap);
+  miniMap.setView([r[C.LAT], r[C.LNG]], 17);
+  L.circleMarker([r[C.LAT], r[C.LNG]], { radius:5, color:"#fff", weight:2, fillColor:"#b8933a", fillOpacity:1 }).addTo(miniMap);
+  const note = $("#mininote");
+  const lay = LAYERS[r.__c];
+  const key = String(r[C.PID]).split("|")[1] || "";
+  if (!lay || !lay.url || !key || key.startsWith("situs:")){ if (note) note.textContent = "The county publishes no parcel outline this map can read; this is the imagery centred on the pin."; return; }
+  const where = `${lay.key}='${key.replace(/'/g, "''")}'`;
+  const url = `${lay.url.replace(/\/$/, "")}/query?where=${encodeURIComponent(where)}&outFields=${encodeURIComponent(lay.key)}&returnGeometry=true&outSR=4326&geometryPrecision=6&f=json`;
+  fetch(url).then(x => x.ok ? x.json() : null).then(j => {
+    const g = j && j.features && j.features[0] && j.features[0].geometry;
+    if (!g || !g.rings || !miniMap){ if (note) note.textContent = "The county's layer did not return this parcel's outline; this is the imagery centred on the pin."; return; }
+    const rings = g.rings.map(ring => ring.map(p => [p[1], p[0]]));
+    const poly = L.polygon(rings, { color:"#b8933a", weight:2.5, fillColor:"#b8933a", fillOpacity:.12 }).addTo(miniMap);
+    miniMap.fitBounds(poly.getBounds(), { padding:[14, 14], maxZoom:19 });
+    if (note) note.textContent = `The parcel outline, from ${r.__c} County's own layer.`;
+  }).catch(() => { if (note) note.textContent = "The county's layer did not answer; this is the imagery centred on the pin."; });
+}
+
+function copyDetail(r){
+  const t = S.counties[r.__c];
+  const lines = [
+    r[C.SITUS], [t.cities[r[C.CITY]], r.__c + " County, CO"].filter(Boolean).join(", "),
+    "Owner of record: " + (t.owners[r[C.OWNER]] || "not on file"),
+    t.mails[r[C.MAIL]] ? "Mails to: " + t.mails[r[C.MAIL]] : null,
+    r[C.SF] ? "Building: " + fmt(r[C.SF]) + " sf" : null,
+    r[C.ACRES] != null ? "Land: " + r[C.ACRES].toFixed(2) + " acres" : null,
+    r[C.YEAR] ? "Built: " + r[C.YEAR] : null,
+    t.zonings[r[C.ZONE]] ? "Zoning: " + t.zonings[r[C.ZONE]] : null,
+    r[C.VAL] ? "Assessor value: " + money(r[C.VAL]) : null,
+    r[C.SALED] ? "Last sale: " + r[C.SALED] + (r[C.SALEP] ? " for " + money(r[C.SALEP]) : "") : null,
+  ].filter(Boolean);
+  navigator.clipboard?.writeText(lines.join("\n"));
+  flash("Copied");
+}
+function showPortfolio(r){
+  const name = S.counties[r.__c].owners[r[C.OWNER]];
+  if (!name){ flash("No owner name on file"); return; }
+  S.portfolio = name; applyNow(); renderRun();
+  if (S.filtered.length > 1) map.fitBounds(S.filtered.map(x => [x[C.LAT], x[C.LNG]]), { padding:[40,40], maxZoom:13, animate:!REDUCED });
+  flash(`${fmt(S.filtered.length)} held by ${name}`);
+}
+function showNearby(r){
+  S.portfolio = null;
+  S.f.soldAfter = YEAR - 3; S.f.soldBefore = null;
+  setRadius({ lat:r[C.LAT], lng:r[C.LNG], m:0.5*MILE });
+  syncFilterUI(); applyNow();
+  S.list = null;
+  const rows = S.filtered.slice().sort((a,b) => (b[C.SALED]||"").localeCompare(a[C.SALED]||""));
+  addToList(rows.slice(0, 200));
+  map.setView([r[C.LAT], r[C.LNG]], 15, { animate:!REDUCED });
+  flash(`${fmt(rows.length)} sold within half a mile since ${YEAR-3}`);
+  renderRun();
+}
+function clearSpecial(){ S.portfolio = null; S.f.soldAfter = null; syncFilterUI(); apply(); renderRun(); }
+
+function flash(msg){
+  const h = $("#hud"); const prev = h.textContent, wasShown = h.classList.contains("show");
+  h.textContent = msg; h.classList.add("show");
+  setTimeout(() => {
+    if (h.textContent !== msg) return;            // something newer took the hud
+    if (wasShown) h.textContent = prev; else { h.textContent = ""; h.classList.remove("show"); }
+  }, 1600);
+}
+
+/* ---------------- the list ---------------- */
+function addToList(rows){
+  if (!S.list) S.list = { items:[], cur:0 };
+  const have = new Set(S.list.items.map(i => i.r[C.PID]));
+  for (const r of rows) if (!have.has(r[C.PID])) S.list.items.push({ r, kept:true });
+  renderList(); $("#list").classList.add("show");
+}
+function interest(r){
+  // owner-occupied first, then the longest hold, then value. What a broker would step through first.
+  const oo = (r[C.FLAGS] & F.OWNER_OCC) ? 0 : 1;
+  const y = saleYear(r) ?? 9999;
+  return [oo, y, -(r[C.VAL] || 0)];
+}
+function makeList(){
+  S.list = null;
+  const rows = S.filtered.slice().sort((a,b) => {
+    const x = interest(a), y = interest(b);
+    for (let i=0;i<3;i++) if (x[i] !== y[i]) return x[i]-y[i];
+    return 0;
+  });
+  addToList(rows.slice(0, 500));
+  if (S.filtered.length > 500) flash("Listing the first 500. Narrow the ground for the rest.");
+}
+function kept(){ return (S.list?.items || []).filter(i => i.kept).map(i => i.r); }
+function renderList(){
+  if (!S.list) return;
+  const k = kept().length;
+  $("#lcount").textContent = fmt(S.list.items.length);
+  $("#lsub").textContent = S.purpose ? S.purpose.listLabel : "in this list";
+  $("#keptn").textContent = `${k} kept`;
+  const t = S.list.items.map((it, i) => {
+    const r = it.r, tb = S.counties[r.__c];
+    const meta = [ r[C.SF] ? fmt(r[C.SF]) + " sf" : null,
+                   r[C.ACRES] != null ? r[C.ACRES].toFixed(2) + " ac" : null,
+                   saleYear(r) ? "since " + saleYear(r) : null,
+                   tb.cities[r[C.CITY]] ].filter(Boolean).join(" · ");
+    return `<div class="row ${i===S.list.cur?"cur":""} ${it.kept?"":"drop"}" data-i="${i}">
+      <span class="tick">${it.kept ? "✓" : ""}</span>
+      <span class="tx"><span class="ad">${esc(r[C.SITUS] || "(no address)")}${(r[C.FLAGS] & F.LISTED) ? ((listingOf(r) || {}).src === "marketplace" ? '<span class="lb" style="border:1px dashed rgba(138,31,45,.5);background:none">Marketplace</span>' : '<span class="lb">Listed</span>') : (r[C.FLAGS] & F.DARK) ? '<span class="lb" style="background:rgba(17,24,39,.1);color:#374151">Went dark</span>' : ""}</span><span class="mt">${esc(meta)}</span></span>
+      <button class="kd" data-kd="${i}" aria-label="${it.kept ? "Drop" : "Keep"}">${it.kept ? "Drop" : "Keep"}</button></div>`;
+  }).join("");
+  $("#rows").innerHTML = t || `<div style="padding:22px 14px;color:var(--faint);font-size:12.5px">Nothing here yet.</div>`;
+  updateCull();
+}
+$("#rows").addEventListener("click", e => {
+  const kd = e.target.closest("[data-kd]");
+  if (kd){ const it = S.list.items[+kd.dataset.kd]; it.kept = !it.kept; renderList(); if (S.sel === it.r) showDetail(it.r); return; }
+  const row = e.target.closest(".row"); if (!row) return;
+  S.list.cur = +row.dataset.i;
+  const it = S.list.items[S.list.cur];
+  map.panTo([it.r[C.LAT], it.r[C.LNG]], { animate:!REDUCED, duration:.4 });
+  showDetail(it.r); renderList();
+});
+$("#btnlist").onclick = () => {
+  const l = $("#list");
+  if (l.classList.contains("show")) l.classList.remove("show");
+  else { if (!S.list) makeList(); else renderList(); l.classList.add("show"); }
+};
+$("#lclose").onclick = () => $("#list").classList.remove("show");
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input,textarea,select")) return;
+  if (!S.list || !$("#list").classList.contains("show")) return;
+  const n = S.list.items.length; if (!n) return;
+  if (e.key === "ArrowDown" || e.key === "j"){ S.list.cur = Math.min(n-1, S.list.cur+1); }
+  else if (e.key === "ArrowUp" || e.key === "k"){ S.list.cur = Math.max(0, S.list.cur-1); }
+  else if (e.key === " "){ S.list.items[S.list.cur].kept = !S.list.items[S.list.cur].kept; S.list.cur = Math.min(n-1, S.list.cur+1); }
+  else return;
+  e.preventDefault();
+  const it = S.list.items[S.list.cur];
+  map.panTo([it.r[C.LAT], it.r[C.LNG]], { animate:!REDUCED, duration:.35 });
+  showDetail(it.r); renderList();
+  $(`.row[data-i="${S.list.cur}"]`)?.scrollIntoView({ block:"nearest", behavior:REDUCED?"auto":"smooth" });
+});
+
+/* ---------------- exports ---------------- */
+function toObjects(rows){
+  return rows.map(r => {
+    const t = S.counties[r.__c];
+    return { pid:r[C.PID], address:r[C.SITUS], city:t.cities[r[C.CITY]], county:r.__c,
+      owner_of_record:t.owners[r[C.OWNER]], owner_mailing_address:t.mails[r[C.MAIL]] || null,
+      building_sf:r[C.SF], acres:r[C.ACRES], year_built:r[C.YEAR], use:t.uses[r[C.USE]], zoning:t.zonings[r[C.ZONE]],
+      last_sale:r[C.SALED], last_sale_price:r[C.SALEP], assessor_value:r[C.VAL],
+      owner_occupied:!!(r[C.FLAGS]&F.OWNER_OCC), out_of_state:!!(r[C.FLAGS]&F.OUT_STATE),
+      you_know_them:!!(r[C.FLAGS]&F.KNOWN), you_have_spoken:!!(r[C.FLAGS]&F.SPOKEN),
+      off_limits:!!(r[C.FLAGS]&F.OFFLIMITS),
+      on_market:!!(r[C.FLAGS]&F.LISTED), went_dark:(r[C.FLAGS]&F.DARK) ? (listingOf(r)?.g || true) : null,
+      listing: listingOf(r) ? listingLine(listingOf(r)) : null, listing_url: listingOf(r)?.u || null,
+      lat:r[C.LAT], lng:r[C.LNG] };
+  });
+}
+function csvOf(objs, cols){
+  cols = cols || Object.keys(objs[0]);
+  const q = v => v==null ? "" : /[",\n]/.test(String(v)) ? '"'+String(v).replace(/"/g,'""')+'"' : String(v);
+  return [cols.join(","), ...objs.map(o => cols.map(c => q(o[c])).join(","))].join("\n");
+}
+function download(name, text, type){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], {type}));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+  flash("Saved " + name);
+}
+function runName(){ return S.run?.name || (S.purpose ? S.purpose.title : "list"); }
+function stamp(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }  // local date, not UTC
+function fileSlug(){ return runName().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "list"; }
+
+function sheetHTML(rows){
+  const objs = toObjects(rows);
+  const p = S.purpose;
+  const isSite = p && (p.id === "site-search" || p.id === "buyer");
+  const head = isSite
+    ? ["#","Property","City / county","Owner of record","Mails to","Building","Land","Last sale","Assessor value","Market / notes"]
+    : ["#","Property","City / county","Owner of record","Mails to","Building","Held since","Assessor value","Market / call notes"];
+  const tr = objs.map((o,i) => {
+    const cells = [
+      i+1, `<b>${esc(o.address || "(no address)")}</b>`, `${esc(o.city || "")}<br><small>${esc(o.county)} County</small>`,
+      `${esc(o.owner_of_record || "not on file")}${o.owner_occupied ? "<br><small>owner occupied</small>" : ""}${o.out_of_state ? "<br><small>out of state</small>" : ""}${o.you_know_them ? "<br><small>you know them</small>" : ""}`,
+      esc(o.owner_mailing_address || ""),
+      o.building_sf ? fmt(o.building_sf) + " sf" : "<small>not on file</small>",
+    ];
+    if (isSite) cells.push(o.acres != null ? o.acres.toFixed(2) + " ac" : "", o.last_sale ? o.last_sale + (o.last_sale_price ? "<br>" + money(o.last_sale_price) : "") : "");
+    else cells.push(o.last_sale ? `${o.last_sale.slice(0,4)}<br><small>${YEAR - parseInt(o.last_sale.slice(0,4),10)} yrs</small>` : "<small>no sale on record</small>");
+    cells.push(o.assessor_value ? money(o.assessor_value) : "",
+               o.on_market ? `<b style="color:#8a1f2d">LISTED</b><br><small>${esc(o.listing || "")}</small>` : (o.went_dark ? `<small>went dark ${esc(o.went_dark)}</small>` : ""));
+    return `<tr>${cells.map(c => `<td>${c}</td>`).join("")}</tr>`;
+  }).join("");
+  const title = S.run?.name ? `${p.title} · ${esc(S.run.name)}` : (p ? p.title : "List");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
+<style>
+ body{font:12px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;color:#111827;margin:28px 34px;}
+ header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1b2a4a;padding-bottom:10px;margin-bottom:14px;}
+ header h1{margin:0;font-size:20px;letter-spacing:-.02em;color:#1b2a4a;} header .m{color:#6b7280;font-size:11.5px;margin-top:3px;}
+ header .brand{font-weight:800;color:#8a1f2d;font-size:12px;letter-spacing:.06em;text-align:right;} header .brand small{display:block;color:#6b7280;font-weight:500;letter-spacing:0;}
+ p.note{color:#6b7280;font-size:11px;margin:0 0 12px;}
+ table{width:100%;border-collapse:collapse;} th{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;text-align:left;padding:6px 7px;border-bottom:1.5px solid #e5e7eb;}
+ td{padding:8px 7px;border-bottom:1px solid #eceef1;vertical-align:top;} td:last-child{width:150px;} small{color:#6b7280;} tr{page-break-inside:avoid;}
+ .btn{position:fixed;top:12px;right:12px;padding:9px 14px;border-radius:9px;background:#1b2a4a;color:#fff;border:0;font-weight:700;cursor:pointer;} @media print{.btn{display:none}}
+</style></head><body>
+<button class="btn" onclick="window.print()">Print</button>
+<header><div><h1>${title}</h1><div class="m">${objs.length} ${plural(objs.length, "property", "properties")} · built ${stamp()} from county assessor records</div></div>
+<div class="brand">FOX FRONT RANGE CRE<small>Andrew Fox · 303-704-7493</small></div></header>
+<p class="note">Owner of record is the county's answer to who owns it, never who to call. An entity gets pierced (Secretary of State) and every property gets a listing check before anyone is contacted. Off-limits owners were left out.</p>
+<table><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${tr}</tbody></table>
+</body></html>`;
+}
+function openSheetView(rows){
+  // Inside the page, not a pop-up: an overlay holding the sheet as its own document, so its
+  // Print button prints the sheet alone and nothing depends on pop-ups being allowed.
+  const v = $("#sheetview");
+  v.querySelector("iframe").srcdoc = sheetHTML(rows);
+  v.classList.add("show");
+}
+$("#sheetclose").onclick = () => $("#sheetview").classList.remove("show");
+$("#sheetcsv").onclick = () => runAction("csv");
+function clientCSV(rows){
+  const objs = toObjects(rows).map(o => ({
+    "Property Name": "", "Street Address": o.address, "City": o.city, "State": "CO", "ZIP": "",
+    "Building SF": o.building_sf, "Broker Notes": ["from the property map", o.owner_of_record ? "owner of record " + o.owner_of_record : null].filter(Boolean).join("; "),
+    "Latitude": o.lat, "Longitude": o.lng,
+  }));
+  download(`${fileSlug()}-sites-for-the-pipeline-sheet.csv`, csvOf(objs), "text/csv");
+}
+
+/* ---------------- radius ---------------- */
+let placing = false;
+function setRadius(rad){
+  S.radius = rad;
+  if (radiusCircle){ map.removeLayer(radiusCircle); radiusCircle = null; }
+  if (rad){
+    radiusCircle = L.circle([rad.lat, rad.lng], { radius:rad.m, color:"#1b2a4a", weight:1.5,
+      fillColor:"#1b2a4a", fillOpacity:.05, dashArray:"5 5", interactive:false }).addTo(map);
+  }
+  $("#btnradius").setAttribute("aria-pressed", rad ? "true" : "false");
+}
+function dropCircle(lat, lng, m){
+  S.f.county = null; const cs = $("#county"); if (cs) cs.value = "";
+  setRadius({ lat, lng, m });
+  apply();
+  if (S.run && cur()?.spec.kind === "ground") groundSet();
+}
+function stopPlacing(){ placing = false; $("#map").classList.remove("placing"); }
+$("#btnradius").onclick = () => {
+  if (S.radius){ setRadius(null); apply(); flash("Circle removed"); if (S.run) renderRun(); return; }
+  placing = true; $("#map").classList.add("placing"); flash("Click the map for the center");
+};
+map.on("click", e => {
+  if (!placing) return;
+  stopPlacing();
+  dropCircle(e.latlng.lat, e.latlng.lng, S.radius?.m || curMiles()*MILE);
+  if (PHONE()) openSide(true);
+});
+map.on("wheel", e => {
+  if (!S.radius || !radiusCircle) return;
+  const d = haversine(S.radius.lat, S.radius.lng, e.latlng.lat, e.latlng.lng);
+  if (d > S.radius.m * 1.25) return;
+  L.DomEvent.preventDefault(e.originalEvent);
+  S.radius.m = Math.max(200, Math.min(40000, S.radius.m * (e.originalEvent.deltaY > 0 ? 1.12 : .89)));
+  radiusCircle.setRadius(S.radius.m);
+  apply(); flash(`${miles(S.radius.m)} mile circle`);
+  syncMiles();
+});
+function curMiles(){ return Number(S.run?.steps[S.run.i]?.vals?.miles || cur()?.spec.miles || 3); }
+function syncMiles(){
+  const seg = $("#runbody .seg"); if (!seg || !S.radius) return;
+  const mi = S.radius.m / MILE;
+  seg.querySelectorAll("button").forEach(b => b.classList.toggle("on", Math.abs(Number(b.dataset.mi) - mi) < .26));
+}
+
+/* ---------------- search ---------------- */
+let qt = null;
+$("#q").addEventListener("input", e => {
+  clearTimeout(qt);
+  qt = setTimeout(() => { S.q = e.target.value.trim().toLowerCase(); apply(); }, 180);
+});
+
+/* ---------------- purpose sheet ---------------- */
+function openSheet(){
+  $("#opts").innerHTML = PURPOSES.map(p => `
+    <button class="opt" data-p="${p.id}">
+      <span class="ic">${p.icon}</span>
+      <span><span class="t">${esc(p.title)}</span><span class="d">${esc(p.blurb)}</span></span>
+    </button>`).join("");
+  renderSavedRuns(); renderRunsDone();
+  $("#scrim").classList.add("show");
+}
+$("#opts").addEventListener("click", e => {
+  const b = e.target.closest("[data-p]"); if (!b) return;
+  setPurpose(PURPOSES.find(p => p.id === b.dataset.p));
+  $("#scrim").classList.remove("show");
+});
+$("#scrim").addEventListener("click", e => { if (e.target.id === "scrim" && S.purpose) $("#scrim").classList.remove("show"); });
+$("#purposebtn").onclick = openSheet;
+$("#tourbtn").onclick = () => { $("#scrim").classList.remove("show"); startTour(); };
+
+function setPurpose(p){
+  if (S.acct) closeAccount(false);
+  S.purpose = p;
+  $("#pval").textContent = p.title;
+  $("#pic").textContent = p.icon;
+  endTour(false);
+  startRun(p);
+}
+
+
+/* ================= YOUR DEALS FIRST (2026-09-18) =================
+   The sidebar opens on Andrew's own deals, not on a universe of strangers. Each row is an account from
+   foxhq-accounts.py; tapping one keys the map to that deal's sites, colour-coded to the real status system
+   (Mark Austin's stages for Port of Subs, the tracker's for a listing). The plays stay as shortcuts. */
+function acctById(id){ return S.accounts.find(a => a.id === id) || null; }
+function stageOf(a, k){ return ((a.statusSystem && a.statusSystem.stages) || []).find(s => s.k === k) || { color:"#7b8694", short:k, t:k }; }
+function liveSite(s){ return s.status.group !== "dead" && s.status.group !== "won"; }
+function sitesOf(a){
+  const th = S.acctThread[a.id] || "all", g = S.acctGroup[a.id] || "live";
+  return (a.sites || []).filter(s => (th === "all" || s.thread === th) && (g === "all" ? true : g === "live" ? liveSite(s) : s.status.group === g));
+}
+function siteWord(a, n){ const w = (a.kind === "listing" || a.kind === "sale") ? "prospect" : "site"; return n === 1 ? w : w + "s"; }
+function renderHome(){
+  const el = $("#home"); if (!el) return;
+  const accs = S.accounts.filter(a => (a.sites || []).length || (a.suggested || []).length || a.counts && a.counts.needs);
+  const rows = accs.map(a => {
+    const by = (a.counts && a.counts.byStatus) || {};
+    const strip = ((a.statusSystem && a.statusSystem.stages) || []).filter(s => by[s.k]).slice(0, 5)
+      .map(s => `<i style="background:${s.hollow ? "none" : s.color};${s.hollow ? "border:1px dashed var(--navy)" : ""}"></i>`).join("");
+    const line = [a.side, a.counts && a.counts.sites ? `${a.counts.sites} ${siteWord(a, a.counts.sites)}` : null,
+                  a.counts && a.counts.suggested ? `${a.counts.suggested} more fit` : null].filter(Boolean).join(" · ");
+    const n = a.counts && a.counts.needs ? `<span class="n hot">${a.counts.needs}</span>` : `<span class="n">${(a.sites||[]).filter(liveSite).length || ""}</span>`;
+    return `<button class="deal" data-acct="${esc(a.id)}"><span class="strip">${strip || '<i style="background:var(--hair)"></i>'}</span><span class="tx"><b>${esc(a.title)}</b><span>${esc(line)}</span></span>${n}</button>`;
+  }).join("");
+  const others = S.accounts.filter(a => !accs.includes(a));
+  el.innerHTML = `
+    <h3>Your deals <span style="font-weight:500;text-transform:none;letter-spacing:0">${S.accounts.length ? "tap one to see everything on it" : ""}</span></h3>
+    ${rows || (S.accountsMissing ? `<div class="hint warn">The deals record did not load with this copy of the map. The next refresh writes it.</div>` : `<div class="hint">No live deals on file.</div>`)}
+    ${others.length ? `<div class="hint">Also live, nothing on the map yet: ${esc(others.map(a => a.title).join(", "))}.</div>` : ""}
+    <h3>Plays</h3>
+    <div class="plays">${PURPOSES.map(p => `<button class="play" data-play="${p.id}"><span class="ic">${p.icon}</span>${esc(p.title)}</button>`).join("")}</div>
+    <div id="srcs">${sourcesHTML()}</div>`;
+}
+const SRC_WORDS = { "crexi-sale":"Crexi for sale", "crexi-lease":"Crexi for lease (your Chrome)", "crexi-lease-alert":"Crexi lease, from the alert emails",
+                    "loopnet":"LoopNet (your Chrome)", "showcase":"LoopNet inventory (Showcase, on its own)", "marketplace":"Facebook Marketplace (owner-posted)" };
+function daysAgo(d){ if (!d) return null; return Math.round((Date.now() - Date.parse(d + "T12:00:00")) / 86400e3); }
+function sourcesHTML(){
+  const order = ["crexi-sale", "crexi-lease", "crexi-lease-alert", "showcase", "loopnet", "marketplace"];
+  const limits = { "crexi-sale":2, "crexi-lease":7, "showcase":10, "loopnet":14 };
+  const lines = order.filter(k => S.sources[k]).map(k => {
+    const s = S.sources[k], n = daysAgo(s.last), stale = limits[k] != null && n != null && n > limits[k];
+    return `<div><b>${esc(SRC_WORDS[k] || k)}</b> · ${fmt(s.up || 0)} up · ${n == null ? "no pull yet" : n === 0 ? "today" : n === 1 ? "yesterday" : `<span class="${stale ? "stale" : ""}">${n} days ago</span>`}</div>`;
+  }).join("");
+  const loose = S.loose.length ? `<div>${S.loose.length} Marketplace ${plural(S.loose.length, "card")} with no exact location, listed under their city only.</div>` : "";
+  const bk = BOOKMARKLETS && BOOKMARKLETS.crexi ? `<div class="how">Crexi's lease inventory answers only inside your own signed-in Chrome, so it is one click of yours: drag this to the bookmarks bar once, then click it on crexi.com about once a week. Same for Marketplace, on a Marketplace search page. The Mac's Fox Atlas server has to be running.</div>
+    <a class="bk" href="${escAttr(BOOKMARKLETS.crexi)}" title="Drag me to the bookmarks bar">Crexi lease → Fox Atlas</a><a class="bk" href="${escAttr(BOOKMARKLETS.marketplace || "#")}" title="Drag me to the bookmarks bar">Marketplace → Fox Atlas</a>` : "";
+  return `<h3 style="margin-top:0">Where the listings come from</h3>${lines || "<div>No market pull on file yet.</div>"}${loose}${bk}`;
+}
+function escAttr(s){ return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;"); }
+$("#home").addEventListener("click", e => {
+  const d = e.target.closest("[data-acct]"); if (d){ openAccount(d.dataset.acct); return; }
+  const p = e.target.closest("[data-play]"); if (p){ closeAccount(false); setPurpose(PURPOSES.find(x => x.id === p.dataset.play)); return; }
+});
+
+/* ================= THE ACCOUNT VIEW ================= */
+function showPane(which){
+  $("#home").hidden = which !== "home"; $("#acct").hidden = which !== "acct"; $("#runbody").hidden = which !== "run";
+}
+function openAccount(id){
+  const a = acctById(id); if (!a) return;
+  if (S.run){ S.run = null; S.purpose = null; $("#pval").textContent = "Chase listings, find sites, look something up…"; S.f = freshF(); setRadius(null); syncFilterUI(); }
+  S.acct = id; S.pick = null; S.list = null; $("#list").classList.remove("show");
+  showPane("acct"); renderAcct(); applyNow();
+  const pts = (a.sites || []).filter(s => s.lat != null && liveSite(s)).map(s => [s.lat, s.lng]);
+  const all = (a.sites || []).filter(s => s.lat != null).map(s => [s.lat, s.lng]);
+  const fit = pts.length >= 2 ? pts : all;
+  if (fit.length >= 2) map.fitBounds(fit, { padding:[40, 40], maxZoom:13, animate:!REDUCED });
+  else if (fit.length === 1) map.setView(fit[0], 14, { animate:!REDUCED });
+  try { history.replaceState(null, "", "#deal/" + id); } catch(e){}
+  if (PHONE()) openSide(true);
+  renderPeek();
+}
+function closeAccount(pan){
+  S.acct = null; S.pick = null; showPane(S.run ? "run" : "home"); applyNow();
+  try { if (/^#deal/.test(location.hash)) history.replaceState(null, "", "#"); } catch(e){}
+  renderPeek();
+}
+function renderAcct(){
+  const a = acctById(S.acct); const el = $("#acct"); if (!a || !el) return;
+  const th = S.acctThread[a.id] || "all", g = S.acctGroup[a.id] || "live";
+  const sites = a.sites || [], inT = sites.filter(s => th === "all" || s.thread === th);
+  const live = inT.filter(liveSite).length, dead = inT.filter(s => s.status.group === "dead").length, won = inT.filter(s => s.status.group === "won").length;
+  const shown = sitesOf(a), used = new Set(shown.map(s => s.status.k));
+  const threads = (a.threads || []).length ? `<div class="thchips"><button class="chip" data-th="all" aria-pressed="${th === "all"}">All <span class="n">${sites.filter(liveSite).length}</span></button>${a.threads.map(x => `<button class="chip" data-th="${esc(x.k)}" aria-pressed="${th === x.k}">${esc(x.t)} <span class="n">${x.n || 0}</span></button>`).join("")}</div>` : "";
+  const groups = `<div class="gchips"><button class="chip" data-g="live" aria-pressed="${g === "live"}">In play ${live}</button>${won ? `<button class="chip" data-g="won" aria-pressed="${g === "won"}">Won ${won}</button>` : ""}${dead ? `<button class="chip" data-g="dead" aria-pressed="${g === "dead"}">Dead or passed ${dead}</button>` : ""}<button class="chip" data-g="all" aria-pressed="${g === "all"}">All ${inT.length}</button></div>`;
+  const legend = `<div class="lg">${((a.statusSystem && a.statusSystem.stages) || []).filter(s => used.has(s.k)).map(s => `<span><i class="${s.hollow ? "hollow" : ""}" style="background:${s.hollow ? "none" : s.color}"></i>${esc(s.t)}</span>`).join("")}</div>`;
+  const pick = S.pick;
+  const rows = shown.map(s => {
+    const on = pick && pick.sel[s.id];
+    const thn = s.thread && a.threads ? (a.threads.find(x => x.k === s.thread) || {}).t : "";
+    const sub = s.courtLine || s.kind || s.last || s.statusBasis || "";
+    return `<button class="site ${S.sel && s.pid && S.sel[C.PID] === s.pid ? "cur" : ""} ${on ? "on" : ""}" data-site="${esc(s.id)}">
+      ${pick ? `<span class="ck">${on ? "✓" : ""}</span>` : `<span class="dot ${s.status.hollow ? "hollow" : ""}" style="background:${s.status.hollow ? "none" : s.status.color}"></span>`}
+      <span class="tx"><b>${thn ? `<span class="th">${esc(thn)}</span>` : ""}${esc(s.name)}${s.lat == null ? ' <span class="th" style="background:var(--yours-soft);color:var(--yours)">no pin</span>' : ""}${s.queued ? ' <span class="th" style="background:var(--green-soft);color:var(--green)">queued</span>' : ""}</b><span>${esc(sub)}</span></span>
+      <span class="st ${s.status.hollow ? "hollow" : ""}" style="background:${s.status.hollow ? "none" : s.status.color}">${esc(s.status.short)}</span></button>`;
+  }).join("");
+  const sug = (a.suggested || []).map(s => `<div class="sugrow"><b>${esc(s.address || s.name)}${s.city ? ", " + esc(s.city) : ""}${s.thread && s.thread !== "open" && a.threads ? ` <span class="th">${esc((a.threads.find(x => x.k === s.thread) || {}).t || s.thread)}</span>` : ""}</b><span>${esc(s.why || "")}${s.source ? " · " + esc(s.source) : ""}</span>
+      <div class="acts"><button class="pri" data-sugadd="${esc(s.id)}">Add to the list</button>${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">Open the listing</a>` : ""}${s.lat != null ? `<button data-suggo="${esc(s.id)}">Show me</button>` : ""}</div></div>`).join("");
+  const n = pick ? Object.keys(pick.sel).filter(k => pick.sel[k]).length : 0;
+  const tenant = a.kind === "tenant" || a.kind === "buyer";
+  el.innerHTML = `<button class="backlink" data-back="1">‹ Your deals</button>
+    <div class="acct-head">${a.logo ? `<img src="${a.logo}" alt="">` : ""}<div><div class="t">${esc(a.title)}</div><div class="k">${esc(a.side)}${a.client && a.client.contact ? " · " + esc(a.client.contact) : ""}${a.courtLine ? " · " + esc(a.courtLine) : ""}</div></div></div>
+    ${a.counts && a.counts.needs ? `<div class="hint warn" style="margin:0 2px 6px">${a.counts.needs} ${plural(a.counts.needs, "card")} need${a.counts.needs === 1 ? "s" : ""} you on Fox HQ for this deal.</div>` : ""}
+    ${a.sheetError ? `<div class="hint warn" style="margin:0 2px 6px">${esc(a.sheetError)}</div>` : ""}
+    ${sites.length ? `<h3>${tenant ? "The sites" : "The prospects"} · ${sites.length}</h3>${threads}${groups}${legend}${rows || '<div class="hint">Nothing on this filter.</div>'}` : `<div class="hint">Nothing on the map for this deal yet.</div>`}
+    ${tenant && sites.length && !pick ? `<button class="alt" data-pickstart="1" style="text-align:left;padding-left:2px">Present some of these to ${esc((a.client || {}).name || "the client")} ›</button>` : ""}
+    ${pick ? `<div class="pbar"><span>${n ? `${n} picked` : "Tap the sites to present"}</span><span style="display:flex;gap:6px"><button data-pickcancel="1">Cancel</button><button class="go" data-pickgo="1" ${n ? "" : "disabled"}>Present ${n || ""}</button></span></div>` : ""}
+    ${(a.suggested || []).length ? `<h3>Also fits ${esc((a.client || {}).name || "the client")} · ${a.suggested.length}</h3><div class="hint" style="margin:0 2px 8px">On the market now, matched against ${esc((a.criteria || {}).line || "the brief")}, not on the list yet. The broker call is still the check.</div>${sug}` : (a.criteriaNote ? `<div class="hint" style="margin:8px 2px">${esc(a.criteriaNote)}</div>` : "")}
+    <div class="hint" style="margin:12px 2px 0">${esc((a.statusSystem || {}).name || "")}. From ${esc(a.source || "the records")}.${a.hqUrl ? ` <a href="${esc(a.hqUrl)}" target="_blank" rel="noopener" style="color:var(--yours);font-weight:600">Open in Fox HQ ›</a>` : ""}</div>`;
+}
+$("#acct").addEventListener("click", e => {
+  const a = acctById(S.acct); if (!a) return;
+  if (e.target.closest("[data-back]")){ closeAccount(true); return; }
+  const th = e.target.closest("[data-th]"); if (th){ S.acctThread[a.id] = th.dataset.th; renderAcct(); applyNow(); return; }
+  const g = e.target.closest("[data-g]"); if (g){ S.acctGroup[a.id] = g.dataset.g; renderAcct(); applyNow(); return; }
+  if (e.target.closest("[data-pickstart]")){ S.pick = { sel:{} }; renderAcct(); flash("Tap the sites to present"); return; }
+  if (e.target.closest("[data-pickcancel]")){ S.pick = null; renderAcct(); return; }
+  if (e.target.closest("[data-pickgo]")){ presentPicked(a); return; }
+  const sa = e.target.closest("[data-sugadd]"); if (sa){ const s = (a.suggested || []).find(x => x.id === sa.dataset.sugadd); if (s) ask("add", a, null, s); return; }
+  const sg = e.target.closest("[data-suggo]"); if (sg){ const s = (a.suggested || []).find(x => x.id === sg.dataset.suggo); if (s && s.lat != null){ map.setView([s.lat, s.lng], 16, { animate:!REDUCED }); const r = s.pid ? S.rows.find(x => x[C.PID] === s.pid) : null; if (r) showDetail(r); if (PHONE()) openSide(false); } return; }
+  const st = e.target.closest("[data-site]"); if (st){
+    const s = (a.sites || []).find(x => x.id === st.dataset.site); if (!s) return;
+    if (S.pick){ S.pick.sel[s.id] = !S.pick.sel[s.id]; renderAcct(); return; }
+    if (s.lat != null) map.setView([s.lat, s.lng], Math.max(map.getZoom(), 15), { animate:!REDUCED });
+    const r = s.pid ? S.rows.find(x => x[C.PID] === s.pid) : null;
+    if (r) showDetail(r); else showSite(a, s);
+    if (PHONE()) openSide(false);
+    renderAcct();
+  }
+});
+
+/* The asks (2026-09-18): present these sites, ask the listing broker, add a site to a deal, prospect one owner. On the
+   Mac they land as a file the hourly Fox HQ pickup reads; off the Mac they go as an email Andrew sends himself, the same
+   lane a run uses. Either way the result is a card on Fox HQ for his Approve, never a send from here. */
+async function ask(kind, a, site, sug, note){
+  const payload = { kind, dealId: a ? a.id : null, deal: a ? a.name : null, who: site ? site.name : sug ? (sug.address || sug.name) : "",
+    site: site ? { id: site.id, name: site.name, address: site.address || "", city: site.city || "", thread: site.thread || "", person: site.person || "", email: site.email || "", phone: site.phone || "", pid: site.pid || null } : null,
+    suggestion: sug ? { id: sug.id, lid: sug.lid || "", address: sug.address || "", city: sug.city || "", url: sug.url || "", thread: sug.thread || "", pid: sug.pid || null } : null,
+    note: note || "", created: new Date().toISOString() };
+  if (sug) sug.pend = kind; if (site) site.pend = kind;
+  if (S.mac){
+    let res = null;
+    try { res = await fetch("/api/ask", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload) }); } catch(e){ res = null; }
+    if (res && res.ok){ flash(kind === "present" ? "Queued to present. The email comes back on Fox HQ for your Approve." : kind === "broker" ? "Queued. A draft comes back on Fox HQ for your Approve." : kind === "add" ? "Added to the list at the next pickup." : "Handed to Fox."); if (S.acct) renderAcct(); return; }
+  }
+  const body = "Fox Atlas ask below. Send this as it is.\n\n" + JSON.stringify(payload);
+  const href = `mailto:${FOX_EMAIL}?subject=${encodeURIComponent("Fox Atlas ask: " + kind + (payload.who ? " " + payload.who : ""))}&body=${encodeURIComponent(body)}`;
+  window.location.href = href;
+  flash("An email to yourself is open with this in it. Send it; Fox picks it up within the hour.");
+  if (S.acct) renderAcct();
+}
+function presentPicked(a){
+  const ids = Object.keys(S.pick.sel).filter(k => S.pick.sel[k]); if (!ids.length) return;
+  const sites = ids.map(i => (a.sites || []).find(s => s.id === i)).filter(Boolean);
+  const note = prompt("Anything to tell " + ((a.client || {}).name || "the client") + " about these? (optional)") || "";
+  const payload = { kind:"present", dealId:a.id, deal:a.name, who: sites.map(s => s.name).join(", "), sites: sites.map(s => ({ id:s.id, name:s.name, address:s.address || "", city:s.city || "", thread:s.thread || "", pid:s.pid || null })), thread: S.acctThread[a.id] && S.acctThread[a.id] !== "all" ? S.acctThread[a.id] : (sites[0] && sites[0].thread) || "", note, created:new Date().toISOString() };
+  S.pick = null;
+  sendAsk(payload, `Queued ${sites.length} to present. Packaged at the next pickup; the email to ${(a.client || {}).name || "the client"} comes back on Fox HQ for your Approve.`);
+}
+async function sendAsk(payload, okMsg){
+  if (S.mac){
+    let res = null;
+    try { res = await fetch("/api/ask", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload) }); } catch(e){ res = null; }
+    if (res && res.ok){ flash(okMsg); renderAcct(); return; }
+  }
+  const href = `mailto:${FOX_EMAIL}?subject=${encodeURIComponent("Fox Atlas ask: " + payload.kind + " " + (payload.who || ""))}&body=${encodeURIComponent("Fox Atlas ask below. Send this as it is.\n\n" + JSON.stringify(payload))}`;
+  window.location.href = href; flash("An email to yourself is open with this in it. Send it; Fox picks it up within the hour."); renderAcct();
+}
+/* A site the sheet knows but the pond does not (no parcel under it): the card from the site record alone. */
+function showSite(a, s){
+  S.sel = null;
+  $("#dad").textContent = s.name;
+  $("#dct").textContent = [s.address, s.city].filter(Boolean).join(", ") || "no street address on file";
+  $("#dbody").innerHTML = acctSection(a, s) + `<div class="dsec"><h4>Do</h4><div id="dacts"></div></div>`;
+  wireSiteActs(a, s, null);
+  $("#detail").classList.add("show");
+}
+function acctSection(a, s){
+  const thn = s.thread && a.threads ? (a.threads.find(x => x.k === s.thread) || {}).who || "" : "";
+  const hist = (s.history || []).length ? `<details class="hist" ${s.history.length <= 2 ? "open" : ""}><summary>Everything on file about it (${s.history.length}) ›</summary>${s.history.map(h => `<div class="hl"><b>${esc(h.when)}</b> · ${esc(h.text)}</div>`).join("")}</details>` : "";
+  const gates = (s.gates || []).length ? `<div style="margin-top:6px;font-size:11.5px">${s.gates.map(g => `<div><span style="color:${g.ok ? "var(--green)" : "var(--yours)"};font-weight:700">${g.ok ? "✓" : "○"}</span> ${esc(g.t)}${g.when ? " · " + esc(g.when) : ""}</div>`).join("")}</div>` : "";
+  const contact = [s.person ? esc(s.person) + (s.firm ? ", " + esc(s.firm) : "") : null, s.phone ? `<a href="tel:${esc(String(s.phone).replace(/[^0-9+]/g, ""))}">${esc(s.phone)}</a>` : null, s.email ? `<a href="mailto:${esc(s.email)}">${esc(s.email)}</a>` : null].filter(Boolean).join(" · ");
+  return `<div class="dsec known"><div class="acctline"><span class="st ${s.status.hollow ? "hollow" : ""}" style="background:${s.status.hollow ? "none" : s.status.color};font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:${s.status.hollow ? "var(--navy)" : "#fff"};border-radius:5px;padding:2px 6px;${s.status.hollow ? "border:1px dashed var(--navy)" : ""}">${esc(s.status.short)}</span> ${esc(a.title)}${thn ? " · for " + esc(thn) : ""}</div>
+    <div class="note" style="margin-top:3px">${esc(s.status.t)}${s.statusBasis ? " · from " + esc(s.statusBasis) : ""}</div>
+    ${s.kind ? `<div class="note" style="margin-top:4px;color:var(--ink)">${esc(s.kind)}</div>` : ""}
+    ${s.courtLine ? `<div class="note" style="margin-top:4px;font-weight:650;color:${s.court === "you" ? "var(--yours)" : s.court === "nobody" ? "var(--accent)" : "var(--muted)"}">${esc(s.courtLine)}</div>` : ""}
+    ${s.queued ? `<div class="note" style="margin-top:4px;color:var(--green);font-weight:650">Queued to present${s.queued.state === "packaged" ? ", packaged" : ""}. Mark's sheet rows go in from a live session, three or four at a time.</div>` : ""}
+    ${contact ? `<div class="note" style="margin-top:6px"><b>${a.kind === "listing" || a.kind === "sale" ? "Contact" : "Listing broker"}:</b> ${contact}</div>` : ""}
+    ${gates}
+    ${s.last && s.last !== s.courtLine ? `<div class="note" style="margin-top:6px"><b>Last touch${s.lastWhen ? ", " + esc(s.lastWhen) : ""}:</b> ${esc(s.last)}</div>` : ""}
+    ${s.notes && s.notes.clientLine ? `<div class="note" style="margin-top:4px"><b>The client sees:</b> ${esc(s.notes.clientLine)}</div>` : ""}
+    ${s.notes && s.notes.broker ? `<div class="note" style="margin-top:4px">${esc(s.notes.broker)}</div>` : ""}
+    ${s.passReason ? `<div class="note" style="margin-top:4px"><b>Why it is out:</b> ${esc(s.passReason)}</div>` : ""}
+    ${(s.links || []).map(l => `<div class="note" style="margin-top:4px"><a href="${esc(l.url)}" target="_blank" rel="noopener" style="color:var(--yours);font-weight:600">${esc(l.t)} ›</a></div>`).join("")}
+    ${hist}
+  </div>`;
+}
+function wireSiteActs(a, s, r){
+  const acts = $("#dacts"); if (!acts) return;
+  const tenant = a && (a.kind === "tenant" || a.kind === "buyer");
+  let h = "";
+  if (a && s && tenant && s.status.group !== "dead" && !s.queued && !s.pend) h += `<button class="act" data-a="present">▶ Present it to ${esc((a.client || {}).name || "the client")}</button>`;
+  if (a && s && (s.person || s.email || s.phone || (r && (r[C.FLAGS] & F.LISTED)))) h += `<button class="act ghost" data-a="broker">✉ Ask the listing broker</button>`;
+  if (r && !(a && s)) {
+    const targets = S.accounts.filter(x => x.kind === "tenant" || x.kind === "buyer");
+    if (targets.length) h += `<button class="act ghost" data-a="addto">＋ Add to a deal as identified</button>`;
+    if (!(r[C.FLAGS] & F.LISTED) && !(r[C.FLAGS] & F.OFFLIMITS)) h += `<button class="act ghost" data-a="prospect">☎ Prospect this one: contact the owner</button>`;
+  }
+  if (a && a.hqUrl) h += `<a class="act ghost" href="${esc(a.hqUrl)}" target="_blank" rel="noopener" style="text-decoration:none">◆ Open ${esc(a.title)} in Fox HQ</a>`;
+  acts.insertAdjacentHTML("afterbegin", h);
+  acts.addEventListener("click", e => {
+    const b = e.target.closest("[data-a]"); if (!b) return;
+    const k = b.dataset.a;
+    if (k === "present"){ const note = prompt("Anything to tell the client about this one? (optional)") || ""; ask("present", a, s, null, note); showRefresh(a, s, r); }
+    else if (k === "broker"){ const note = prompt("What do you want to ask? Availability, rate, condition, timing.") ; if (note == null) return; ask("broker", a, s, null, note); showRefresh(a, s, r); }
+    else if (k === "addto"){ pickDeal(r); }
+    else if (k === "prospect"){ prospectOne(r); }
+  });
+}
+function showRefresh(a, s, r){ if (r) showDetail(r); else if (a && s) showSite(a, s); }
+function pickDeal(r){
+  const targets = S.accounts.filter(x => x.kind === "tenant" || x.kind === "buyer");
+  const names = targets.map((x, i) => `${i + 1}. ${x.title}`).join("\n");
+  const ans = prompt("Add " + (r[C.SITUS] || "this property") + " to which deal? Type the number.\n\n" + names);
+  const i = parseInt(ans, 10) - 1; if (!(i >= 0 && i < targets.length)) return;
+  const t = S.counties[r.__c];
+  const sug = { id: "map-" + r[C.PID], address: r[C.SITUS], city: t.cities[r[C.CITY]], pid: r[C.PID], lid: (listingOf(r) && listingOf(r).u) ? "" : "", url: (listingOf(r) || {}).u || "" };
+  ask("add", targets[i], null, sug);
+}
+/* Prospect this one: the cold-prospecting lane kept, as a per-property action, never a front door (Andrew, 2026-09-18).
+   One parcel becomes a run of one; the checker does the owner pierce and the Article 16 check fail-closed. */
+function prospectOne(r){
+  const p = PURPOSES.find(x => x.id === "listings"); if (!p) return;
+  S.purpose = p; $("#pval").textContent = p.title;
+  S.run = { p, i: p.steps.length - 1, name: "Prospect " + (r[C.SITUS] || r[C.PID]), saved: null, steps: p.steps.map(s => ({ spec:s, status:"done", n:1, note:null, snap:null, vals:{} })) };
+  S.run.steps[S.run.i].status = "cur";
+  S.list = { items:[{ r, kept:true }], cur:0 };
+  handoff([r]);
+  showPane("run"); renderRun(); if (PHONE()) openSide(true);
+}
+
+/* ================= THE GUIDED RUN ================= */
+function cur(){ return S.run ? S.run.steps[S.run.i] : null; }
+function snapshot(){ return { f:cloneF(S.f), radius:S.radius ? {...S.radius} : null }; }
+function restore(snap){ S.f = cloneF(snap.f); setRadius(snap.radius ? {...snap.radius} : null); syncFilterUI(); }
+
+function startRun(p){
+  S.f = freshF(); setRadius(null); S.list = null; S.portfolio = null; S.q = ""; $("#q").value = "";
+  $("#list").classList.remove("show"); $("#detail").classList.remove("show");
+  applyBase(p.base);
+  S.run = { p, i:0, name:null, saved:null,
+            steps:p.steps.map(s => ({ spec:s, status:"todo", n:null, note:null, snap:null, vals:{} })) };
+  S.run.steps[0].status = "cur"; S.run.steps[0].snap = snapshot();
+  showPane("run");
+  syncFilterUI(); renderRun(); apply();
+  if (PHONE()) openSide(true);
+}
+function applyBase(base, f = S.f){
+  for (const a of (base?.assets || [])) f.assets.add(a);
+  for (const k of (base?.know || [])) f.know.add(k);
+}
+function groundCount(){
+  // What the ground step reports: everything inside the ground, with only the purpose's base
+  // filters on (so "hide off limits" is already respected, and nothing else is).
+  const base = freshF(); applyBase(S.run.p.base, base); base.county = S.f.county;
+  return countWith(base, S.radius);
+}
+function applySet(set, vals){
+  if (!set) return;
+  if (set.assets){ S.f.assets = new Set(set.assets); }
+  for (const k of (set.know || [])) S.f.know.add(k);
+  if (set.heldYears != null) S.f.soldBefore = YEAR - Number(vals?.heldYears ?? set.heldYears);
+}
+let advanceTimer = null;
+function armAdvance(ms){ clearTimeout(advanceTimer); advanceTimer = setTimeout(advance, ms); }
+function completeStep(n, note){
+  const st = cur(); if (!st || st.status !== "cur") return;
+  st.status = "done"; st.n = n; st.note = note || null;
+  renderRun();
+  const last = S.run.i === S.run.steps.length - 1;
+  if (!last) armAdvance(st.spec.kind === "cull" || st.spec.kind === "lookup" ? 1200 : 900);
+}
+function advance(){
+  clearTimeout(advanceTimer);
+  if (!S.run || S.run.i >= S.run.steps.length - 1) return;
+  const c = cur();
+  if (c.status === "cur"){ c.status = "done"; c.n = c.vals.n ?? c.n; }   // "next ›" before the timer: still counts
+  S.run.i++;
+  const st = cur(); st.status = "cur"; st.snap = snapshot();
+  renderRun();
+  if (S.tour) tourStep();
+  if (PHONE()) openSide(true);
+}
+function rewind(k){
+  clearTimeout(advanceTimer);
+  const st = S.run.steps[k];
+  const keepGround = st.spec.kind === "ground";
+  const g = { radius:S.radius ? {...S.radius} : null, county:S.f.county };
+  restore(st.snap);
+  if (keepGround){ setRadius(g.radius); S.f.county = g.county; syncFilterUI(); }
+  for (let j = k; j < S.run.steps.length; j++){ const s = S.run.steps[j]; s.status = "todo"; s.n = null; s.note = null; }
+  st.status = "cur";
+  S.run.i = k;
+  if (S.run.steps.slice(k).some(s => s.spec.kind === "cull")){ S.list = null; $("#list").classList.remove("show"); }
+  S.portfolio = null;
+  renderRun(); apply();
+}
+function liveRunNumbers(){
+  // The ground step's number follows the circle live (he can resize it from any later step).
+  const g = S.run.steps.find(s => s.spec.kind === "ground");
+  if (g && g.status === "done" && (S.radius || S.f.county)){
+    const n = groundCount();
+    if (n !== g.n){ g.n = n; const el = $(`.step.done[data-k="${S.run.steps.indexOf(g)}"] .n`); if (el) el.textContent = fmt(n) + " inside"; }
+  }
+}
+
+function renderRun(){
+  const body = $("#runbody");
+  if (!S.acct) showPane(S.run || S.portfolio != null ? "run" : "home");
+  if (S.portfolio != null){
+    body.innerHTML = `<div class="banner"><span>Everything ${esc(S.portfolio)} holds · ${fmt(S.filtered.length)}</span><button data-do="clearspecial">back</button></div>` + (S.run ? runHTML() : "");
+  } else if (!S.run){
+    body.innerHTML = `<div class="idle"><b>No play running.</b>Your deals and the plays are one tap back.<br><button class="go" data-do="home" style="width:auto;display:inline-flex;padding:10px 18px">Back to your deals</button></div>`;
+  } else {
+    body.innerHTML = (S.f.soldAfter != null && !S.run.steps.some(s => s.spec.kind === "narrow" && s.status !== "todo") ? `<div class="banner"><span>Sold since ${S.f.soldAfter}, half a mile</span><button data-do="clearspecial">back</button></div>` : "") + runHTML();
+  }
+  syncMiles();
+  const kn = $("#runbody .finish .kept .num");
+  if (kn) animateNum(kn, S.purpose?.id === "lookup" ? (S.sel ? 1 : 0) : kept().length);
+  renderPeek();
+}
+$("#runbody").addEventListener("keydown", e => { if (e.target.id === "runname" && e.key === "Enter"){ e.preventDefault(); saveCurrentRun(); } });
+function runHTML(){
+  const R = S.run, n = R.steps.length, k = R.i;
+  const pct = Math.round(100 * R.steps.filter(s => s.status === "done").length / n);
+  let h = `<div class="runhead"><div class="rk">Step <b>${k+1}</b> of ${n} · ${esc(R.p.title)}</div><button data-do="restart">Start over</button></div>
+           <div class="bar"><span style="width:${pct}%"></span></div>`;
+  R.steps.forEach((s, i) => {
+    if (s.status === "done"){
+      h += `<button class="step done" data-k="${i}" data-do="rewind" title="Reopen this step"><span class="tick">✓</span><span class="t">${esc(s.spec.title)}</span><span class="n">${doneLabel(s)}</span></button>`;
+    } else if (s.status === "cur"){
+      h += `<div class="step cur"><div class="kicker">Step ${i+1} of ${n}</div><h2>${esc(s.spec.title)}</h2>
+              <p class="do">${esc(s.spec.do)}</p>${s.spec.why ? `<p class="why">${esc(s.spec.why)}</p>` : ""}
+              <div class="body">${stepBody(s, i)}</div></div>`;
+    } else {
+      h += `<div class="step todo"><span class="k">${i+1}</span><span>${esc(s.spec.title)}</span></div>`;
+    }
+  });
+  return h;
+}
+function doneLabel(s){
+  if (s.note) return esc(s.note);
+  if (s.n == null) return "";
+  const kind = s.spec.kind;
+  if (kind === "ground") return fmt(s.n) + " inside";
+  if (kind === "cull") return fmt(s.n) + " kept";
+  if (kind === "measure") return s.n + "% touched";
+  return fmt(s.n) + " left";
+}
+function groundLabel(){
+  if (S.f.county) return `everything in ${S.f.county} County`;
+  if (S.radius) return `a ${miles(S.radius.m)} mile circle`;
+  return null;
+}
+function stepBody(s, i){
+  const sp = s.spec, v = s.vals;
+  if (sp.kind === "ground"){
+    const mi = v.miles || sp.miles || 3;
+    const seg = [1,2,3,5,10].map(m => `<button data-mi="${m}" class="${m===mi?"on":""}">${m}</button>`).join("");
+    const counties = Object.keys(S.counties).sort().map(c => `<option value="${c}" ${S.f.county===c?"selected":""}>${c}</option>`).join("");
+    const have = S.radius || S.f.county;
+    return `<div class="miles"><span>Circle size, miles</span><div class="seg" data-do="miles">${seg}</div></div>
+      <button class="go" data-do="drop">${esc(sp.button)}</button>
+      <button class="alt" data-do="tap">or tap the map to place it</button>
+      <div class="or"><span>or a whole county</span><select data-do="county"><option value="">choose…</option>${counties}</select></div>
+      ${have ? `<div class="result"><span class="num" data-v="0">0</span><span class="lbl">inside ${esc(groundLabel())}</span><button class="altlink sm" data-do="next">next ›</button></div>${brokersHTML()}` : ""}`;
+  }
+  if (sp.kind === "narrow"){
+    let h = "";
+    if (sp.chips === "assets"){
+      h += `<div class="chips" style="margin-bottom:12px">${Object.keys(A).map(a => `<button class="chip" data-chip="${a}" aria-pressed="${S.f.assets.has(a)}">${ALABEL[a]}</button>`).join("")}</div>`;
+    }
+    if (sp.inputs){
+      const inG = new Set(S.rows.filter(r => inGround(r, S.f, S.radius)).map(r => r.__c));
+      const none = sizeless([...inG]);
+      if (sp.inputs.includes("sf")){
+        if (none.length === inG.size && inG.size){
+          h += `<div class="hint warn" style="margin:0 0 10px">None of the counties in your ground have given us building sizes yet (${none.join(", ")}), so this step cannot help here. Skip it.</div>`;
+        } else {
+          h += `<div class="range"><label>Building</label><input data-in="sfMin" type="number" inputmode="numeric" placeholder="min sf" value="${S.f.sfMin ?? ""}"><span>to</span><input data-in="sfMax" type="number" inputmode="numeric" placeholder="max sf" value="${S.f.sfMax ?? ""}"></div>`;
+          if (none.length) h += `<div class="hint warn">No sizes yet for ${none.join(", ")}: a size filter hides everything there.</div>`;
+        }
+      }
+      if (sp.inputs.includes("val")){
+        h += `<div class="range"><label>Value</label><input data-in="valMin" type="number" inputmode="numeric" placeholder="min $" value="${S.f.valMin ?? ""}"><span>to</span><input data-in="valMax" type="number" inputmode="numeric" placeholder="max $" value="${S.f.valMax ?? ""}"></div>`;
+      }
+      h += `<div style="height:10px"></div>`;
+    }
+    if (sp.set?.heldYears != null){
+      const hy = v.heldYears ?? sp.set.heldYears;
+      h += `<div class="miles"><span>Held at least, years</span><div class="seg" data-do="held">${[10,15,20].map(y => `<button data-yr="${y}" class="${y===hy?"on":""}">${y}</button>`).join("")}</div></div>`;
+    }
+    h += `<button class="go" data-do="narrow">${esc(sp.button)}</button>`;
+    if (sp.skippable) h += `<button class="alt" data-do="skip">Skip this step</button>`;
+    if (v.dead) h += deadHTML(s);
+    else if (v.n != null) h += `<div class="result"><span class="num" data-v="0">0</span><span class="lbl">${v.n === 1 ? "match" : "matches"}</span></div>`;
+    return h;
+  }
+  if (sp.kind === "cull"){
+    if (!S.list) return `<button class="go" data-do="cull">${esc(sp.button)}</button><div class="hint" style="margin-top:9px">Arrow keys to step, space to drop. On the phone, tap Drop on a row.</div>`;
+    const k = kept().length;
+    return `<div class="cull"><span class="num" id="cullnum">${fmt(k)}</span><span class="lbl">kept of ${fmt(S.list.items.length)}</span></div>
+      <button class="go" data-do="culldone">Done, keep these <span id="cullbtn">${fmt(k)}</span></button>
+      <button class="alt" data-do="showlist">Show the list</button>`;
+  }
+  if (sp.kind === "measure"){
+    if (v.m) return measureHTML(v.m);
+    return `<button class="go" data-do="measure">${esc(sp.button)}</button>`;
+  }
+  if (sp.kind === "lookup"){
+    return `<button class="go" data-do="search">${esc(sp.button)}</button><div class="hint" style="margin-top:9px">Then tap the pin. The card opens on the right.</div>`;
+  }
+  if (sp.kind === "finish"){
+    const rows = S.purpose.id === "lookup" ? (S.sel ? [S.sel] : []) : kept();
+    const listedN = rows.filter(r => r[C.FLAGS] & F.LISTED).length;
+    const outreach = sp.actions.some(a => a.id === "handoff");
+    const listedNote = listedN ? (outreach
+      ? `<div class="hint warn" style="margin:0 0 10px">${listedN} of these ${listedN === 1 ? "is" : "are"} on the market with another broker. ${listedN === 1 ? "It" : "They"} stay on your sheet marked listed, and Fox leaves ${listedN === 1 ? "it" : "them"} out of any outreach.</div>`
+      : `<div class="hint" style="margin:0 0 10px">${listedN} of these ${listedN === 1 ? "is" : "are"} on the market right now, marked on the sheet with the listing broker.</div>`) : "";
+    const acts = sp.actions.map((a, j) => {
+      const dis = (a.id === "portfolio" || a.id === "nearby" || a.id === "copy") ? "" : (rows.length ? "" : "disabled");
+      return `<button class="go ${j ? "ghost" : ""}" data-act="${a.id}" ${dis}>${esc(a.label)}</button>`;
+    }).join("");
+    const csvAlt = sp.actions.some(a => a.id === "sheet") ? `<div class="sub"><button class="altlink" data-act="csv">or save it as a spreadsheet</button></div>` : "";
+    const saveRow = S.run.saved
+      ? `<div class="saved">✓ Saved as “${esc(S.run.saved)}”. It is on the purpose screen, one tap from now on.</div>`
+      : `<div class="save"><input id="runname" placeholder="Name this run, e.g. Castle Rock owner-occupied"><button data-do="save">Save</button></div>`;
+    return `<div class="finish">
+      ${S.purpose.id === "lookup" ? "" : `<div class="kept"><span class="num" data-v="0">0</span><span class="lbl">${esc(S.purpose.listLabel)}</span></div>`}
+      ${listedNote}
+      <div class="acts">${acts}</div>${csvAlt}
+      ${S.purpose.id === "lookup" ? "" : saveRow}
+      <div id="handoffstate">${S.run.handoff ? handoffHTML(S.run.handoff) : ""}</div>
+    </div>`;
+  }
+  return "";
+}
+function brokersHTML(){
+  // Who is listing inside this ground right now: the referral and co-broke map, from the on-market layer.
+  const counts = new Map(); let listed = 0, dark = 0;
+  for (const r of S.rows){
+    if (!inGround(r, S.f, S.radius)) continue;
+    if (r[C.FLAGS] & F.DARK) dark++;
+    if (!(r[C.FLAGS] & F.LISTED)) continue;
+    listed++;
+    const l = listingOf(r); const b = (l && l.b) || "no brokerage on the listing";
+    counts.set(b, (counts.get(b) || 0) + 1);
+  }
+  if (!listed && !dark) return "";
+  const top = [...counts.entries()].sort((a,b) => b[1]-a[1]).slice(0, 5);
+  return `<div class="brokers"><b>${fmt(listed)} on the market</b> here${dark ? `, <b>${fmt(dark)}</b> went dark in the last 90 days` : ""}.${top.length ? " Listing them: " + top.map(([b,n]) => `${esc(b)} <b>${n}</b>`).join(" · ") : ""}</div>`;
+}
+function measureHTML(m){
+  const pct = m.owners ? Math.round(100 * m.spoken / m.owners) : 0;
+  return `<div class="measure"><div class="big">${pct}%</div>
+    <p>You have spoken to <b>${fmt(m.spoken)}</b> of the <b>${fmt(m.owners)}</b> owners in this circle. You know <b>${fmt(m.known)}</b> by name${m.off ? `, and <b>${fmt(m.off)}</b> ${m.off===1?"is":"are"} off limits` : ""}.</p>
+    <p style="color:var(--muted)">${fmt(m.oo)} of the properties are owner occupied and ${fmt(m.out)} have an owner out of state.</p></div>`;
+}
+function deadHTML(s){
+  const d = s.vals.dead;
+  let h = `<div class="dead"><b>Nothing matched.</b>${esc(d.text)}`;
+  if (d.options.length) h += `<div class="rx">${d.options.map(o => `<button data-relax="${o.id}">${esc(o.label)}<b>→ ${fmt(o.n)}</b></button>`).join("")}</div>`;
+  return h + `</div>`;
+}
+
+/* --- run panel clicks --- */
+$("#runbody").addEventListener("click", e => {
+  const chip = e.target.closest("[data-chip]");
+  if (chip){ const on = chip.getAttribute("aria-pressed") === "true"; chip.setAttribute("aria-pressed", on ? "false" : "true"); on ? S.f.assets.delete(chip.dataset.chip) : S.f.assets.add(chip.dataset.chip); syncFilterUI(); apply(); return; }
+  const mi = e.target.closest("[data-mi]");
+  if (mi){ clearTimeout(advanceTimer); const st = cur(); st.vals.miles = Number(mi.dataset.mi); mi.parentElement.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === mi));
+    if (S.radius){ S.radius.m = st.vals.miles * MILE; radiusCircle.setRadius(S.radius.m); apply(); groundSet(); } return; }
+  const yr = e.target.closest("[data-yr]");
+  if (yr){ const st = cur(); st.vals.heldYears = Number(yr.dataset.yr); yr.parentElement.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === yr)); return; }
+  const rx = e.target.closest("[data-relax]");
+  if (rx){ applyRelax(rx.dataset.relax); return; }
+  const act = e.target.closest("[data-act]");
+  if (act){ runAction(act.dataset.act); return; }
+  const b = e.target.closest("[data-do]"); if (!b) return;
+  const d = b.dataset.do;
+  if (d === "pick") openSheet();
+  else if (d === "home"){ S.run = null; S.purpose = null; $("#pval").textContent = "Chase listings, find sites, look something up…"; S.f = freshF(); setRadius(null); syncFilterUI(); renderHome(); showPane("home"); apply(); renderPeek(); }
+  else if (d === "restart") startRun(S.run.p);
+  else if (d === "rewind") rewind(Number(b.dataset.k));
+  else if (d === "clearspecial") clearSpecial();
+  else if (d === "drop"){ const c = map.getCenter(); dropCircle(c.lat, c.lng, curMiles()*MILE); }
+  else if (d === "tap"){ placing = true; $("#map").classList.add("placing"); flash("Tap the map for the center"); if (PHONE()) openSide(false); }
+  else if (d === "next"){ clearTimeout(advanceTimer); advance(); }
+  else if (d === "narrow") doNarrow();
+  else if (d === "skip"){ const st = cur(); for (const k of ["sfMin","sfMax","valMin","valMax"]) S.f[k] = null; syncFilterUI(); apply(); st.vals.n = null; completeStep(null, "skipped"); }
+  else if (d === "cull"){ if (cur()?.spec.kind !== "cull") return; makeList(); renderRun(); if (PHONE()) openSide(false); }
+  else if (d === "culldone"){ if (cur()?.spec.kind !== "cull" || cur().status !== "cur") return; const k = kept().length; if (!k){ flash("Keep at least one"); return; } $("#list").classList.remove("show"); completeStep(k); }
+  else if (d === "showlist"){ renderList(); $("#list").classList.add("show"); if (PHONE()) openSide(false); }
+  else if (d === "measure") doMeasure();
+  else if (d === "search"){ $("#q").focus(); if (PHONE()) openSide(false); }
+  else if (d === "save") saveCurrentRun();
+  else if (d === "copyrun"){ if (S.run.lastPayload){ navigator.clipboard?.writeText("Fox Atlas run below. Send this as it is.\n\n" + compactRun(S.run.lastPayload)); S.run.handoff = { state:"copied" }; renderRun(); } }
+});
+$("#runbody").addEventListener("change", e => {
+  const sel = e.target.closest("[data-do='county']"); if (!sel) return;
+  clearTimeout(advanceTimer);
+  S.f.county = sel.value || null; if (S.f.county) setRadius(null);
+  syncFilterUI(); apply();
+  if (S.f.county) groundSet(); else renderRun();
+});
+$("#runbody").addEventListener("input", e => {
+  const inp = e.target.closest("[data-in]"); if (!inp) return;
+  const v = inp.value === "" ? null : Number(inp.value);
+  S.f[inp.dataset.in] = Number.isFinite(v) ? v : null;
+  syncFilterUI(); apply();
+});
+
+function groundSet(){
+  const st = cur(); if (!st || st.spec.kind !== "ground") return;
+  renderRun();
+  setTimeout(() => {
+    const n = groundCount();
+    const el = $("#runbody .result .num"); if (el) animateNum(el, n);
+    st.vals.n = n;
+    if (S.radius) map.fitBounds(radiusCircle.getBounds(), { padding:[30,30], animate:!REDUCED });
+    clearTimeout(advanceTimer);
+    advanceTimer = setTimeout(() => { st.status = "cur"; completeStep(n); }, 1500);
+  }, 30);
+}
+function doNarrow(){
+  const st = cur(); if (!st || st.spec.kind !== "narrow" || st.status !== "cur") return;
+  const sp = st.spec;
+  clearTimeout(advanceTimer);
+  applySet(sp.set, st.vals);
+  syncFilterUI(); applyNow();
+  const n = S.filtered.length;
+  if (n < (sp.min || 1)){
+    st.vals.dead = deadEnd(sp); st.vals.n = null; renderRun(); return;
+  }
+  st.vals.dead = null; st.vals.n = n; renderRun();
+  const el = $("#runbody .result .num"); if (el) animateNum(el, n);
+  advanceTimer = setTimeout(() => completeStep(n), 900);
+}
+function deadEnd(sp){
+  const opts = [];
+  const f0 = S.f, r0 = S.radius;
+  const tryOpt = (id, label, mut) => {
+    const f = cloneF(f0); let r = r0 ? {...r0} : null;
+    const ok = mut(f, x => { r = x; });
+    if (ok === false) return;
+    const n = countWith(f, r);
+    if (n > 0) opts.push({ id, label, n });
+  };
+  for (const id of (sp.relax || [])){
+    if (id === "held") tryOpt(id, `Drop the ${YEAR - (f0.soldBefore ?? YEAR)}-year hold`, f => { if (f.soldBefore == null) return false; f.soldBefore = null; });
+    if (id === "owneropp") tryOpt(id, "Include owners who mail elsewhere", f => { if (!f.know.has("owneropp")) return false; f.know.delete("owneropp"); });
+    if (id === "wider") tryOpt(id, r0 ? `Widen the circle to ${miles(r0.m*1.6)} miles` : "Widen to every county", (f, setR) => { if (r0) setR({...r0, m:r0.m*1.6}); else if (f.county) f.county = null; else return false; });
+    if (id === "office") tryOpt(id, "Add office buildings", f => { if (f.assets.has("office")) return false; f.assets.add("office"); });
+    if (id === "types") tryOpt(id, "Every kind of building", f => { if (!f.assets.size) return false; f.assets.clear(); });
+    if (id === "size") tryOpt(id, "Drop the size filter", f => { if (f.sfMin == null && f.sfMax == null) return false; f.sfMin = f.sfMax = null; });
+    if (id === "value") tryOpt(id, "Drop the value range", f => { if (f.valMin == null && f.valMax == null) return false; f.valMin = f.valMax = null; });
+  }
+  const hidden = (f0.sfMin != null || f0.sfMax != null) ? sizeless([...new Set(S.rows.filter(r => inGround(r, f0, r0)).map(r => r.__c))]) : [];
+  let text = " ";
+  if (hidden.length) text += `The size filter hides ${hidden.join(", ")}, which have not given us building sizes yet. `;
+  text += opts.length ? "Loosen one thing and here is what you get." : "Try a bigger circle or a different part of the Front Range.";
+  if (!opts.length && r0) opts.push({ id:"wider", label:`Widen the circle to ${miles(r0.m*2)} miles`, n:countWith(f0, {...r0, m:r0.m*2}) });
+  return { text, options:opts.slice(0, 4) };
+}
+function applyRelax(id){
+  const st = cur(); if (!st || st.spec.kind !== "narrow" || st.status !== "cur") return;
+  clearTimeout(advanceTimer);
+  if (id === "held") S.f.soldBefore = null;
+  if (id === "owneropp") S.f.know.delete("owneropp");
+  if (id === "wider"){ if (S.radius){ S.radius.m *= (st.vals.dead?.options.find(o => o.id==="wider")?.label.includes(miles(S.radius.m*2)) ? 2 : 1.6); radiusCircle.setRadius(S.radius.m); } else S.f.county = null; }
+  if (id === "office") S.f.assets.add("office");
+  if (id === "types") S.f.assets.clear();
+  if (id === "size") S.f.sfMin = S.f.sfMax = null;
+  if (id === "value") S.f.valMin = S.f.valMax = null;
+  syncFilterUI(); applyNow();
+  const n = S.filtered.length;
+  if (n < (st.spec.min || 1)){ st.vals.dead = deadEnd(st.spec); renderRun(); return; }
+  st.vals.dead = null; st.vals.n = n; renderRun();
+  const el = $("#runbody .result .num"); if (el) animateNum(el, n);
+  liveRunNumbers();
+  advanceTimer = setTimeout(() => completeStep(n), 900);
+}
+function doMeasure(){
+  const st = cur(); if (!st || st.spec.kind !== "measure" || st.status !== "cur") return;
+  clearTimeout(advanceTimer);
+  const inG = S.rows.filter(r => inGround(r, S.f, S.radius));
+  const owners = new Map();
+  let oo = 0, out = 0;
+  for (const r of inG){
+    const name = S.counties[r.__c].owners[r[C.OWNER]] || ("?" + r[C.PID]);
+    const o = owners.get(name) || { spoken:false, known:false, off:false };
+    if (r[C.FLAGS] & F.SPOKEN) o.spoken = true;
+    if (r[C.FLAGS] & F.KNOWN) o.known = true;
+    if (r[C.FLAGS] & F.OFFLIMITS) o.off = true;
+    if (r[C.FLAGS] & F.OWNER_OCC) oo++;
+    if (r[C.FLAGS] & F.OUT_STATE) out++;
+    owners.set(name, o);
+  }
+  const m = { owners:owners.size, spoken:0, known:0, off:0, oo, out, props:inG.length };
+  for (const o of owners.values()){ if (o.spoken) m.spoken++; if (o.known) m.known++; if (o.off) m.off++; }
+  st.vals.m = m; renderRun();
+  advanceTimer = setTimeout(() => completeStep(m.owners ? Math.round(100*m.spoken/m.owners) : 0), 1700);
+}
+function updateCull(){
+  const k = kept().length;
+  const a = $("#cullnum"), b = $("#cullbtn");
+  if (a) a.textContent = fmt(k); if (b) b.textContent = fmt(k);
+}
+
+/* --- finish actions --- */
+function runAction(id){
+  const rows = S.purpose?.id === "lookup" ? (S.sel ? [S.sel] : []) : kept();
+  if (id === "portfolio"){ if (!S.sel){ flash("Tap a property first"); return; } showPortfolio(S.sel); return; }
+  if (id === "nearby"){ if (!S.sel){ flash("Tap a property first"); return; } showNearby(S.sel); return; }
+  if (!rows.length){ flash("Nothing kept yet"); return; }
+  if (id === "sheet")  return openSheetView(rows);
+  if (id === "csv")    return download(`${fileSlug()}-${stamp()}.csv`, csvOf(toObjects(rows)), "text/csv");
+  if (id === "copy"){ if (rows.length === 1 && S.purpose.id === "lookup") return copyDetail(rows[0]); navigator.clipboard?.writeText(csvOf(toObjects(rows))); return flash(`${rows.length} copied`); }
+  if (id === "clientcsv") return clientCSV(rows);
+  if (id === "handoff") return handoff(rows);
+}
+
+/* --- saved runs --- */
+const RUNS_KEY = "pm.runs.v1";
+function loadRuns(){ try { return JSON.parse(localStorage.getItem(RUNS_KEY) || "[]"); } catch(e){ return []; } }
+function storeRuns(list){ try { localStorage.setItem(RUNS_KEY, JSON.stringify(list)); } catch(e){ flash("Could not save on this device"); } }
+function serializeF(){ const o = {...S.f}; o.assets = [...S.f.assets]; o.know = [...S.f.know]; return o; }
+function saveCurrentRun(){
+  const name = ($("#runname")?.value || "").trim();
+  if (!name){ flash("Give it a name first"); $("#runname")?.focus(); return; }
+  const list = loadRuns().filter(r => r.name.toLowerCase() !== name.toLowerCase());
+  const through = Math.max(-1, ...S.run.steps.map((s, i) => (s.status === "done" && s.spec.kind !== "cull" && s.spec.kind !== "finish") ? i : -1));
+  list.unshift({ id: Date.now().toString(36), name, purpose:S.run.p.id, created:stamp(),
+                 ground:{ radius:S.radius, county:S.f.county }, f:serializeF(), through,
+                 n: S.filtered.length, kept: kept().length });
+  storeRuns(list);
+  S.run.name = name; S.run.saved = name;
+  renderRun(); flash("Saved");
+}
+function renderSavedRuns(){
+  const list = loadRuns(); const el = $("#srlist");
+  if (!list.length){ el.innerHTML = ""; return; }
+  el.innerHTML = `<h3>Run one you saved</h3>` + list.map(r => {
+    const p = PURPOSES.find(x => x.id === r.purpose);
+    const where = r.ground?.county ? r.ground.county + " County" : r.ground?.radius ? `${miles(r.ground.radius.m)} mi circle` : "";
+    return `<div class="sr"><span class="ic">${p?.icon || ""}</span><span class="t"><b>${esc(r.name)}</b><span>${esc(p?.title || "")} · ${esc(where)} · saved ${r.created}</span></span>
+      <button class="runb" data-sr="${r.id}">Run</button><button class="del" data-del="${r.id}" aria-label="Forget">✕</button></div>`;
+  }).join("");
+}
+$("#srlist").addEventListener("click", e => {
+  const del = e.target.closest("[data-del]");
+  if (del){ storeRuns(loadRuns().filter(r => r.id !== del.dataset.del)); renderSavedRuns(); return; }
+  const b = e.target.closest("[data-sr]"); if (!b) return;
+  const r = loadRuns().find(x => x.id === b.dataset.sr); if (!r) return;
+  $("#scrim").classList.remove("show");
+  runSaved(r);
+});
+function runSaved(sr){
+  const p = PURPOSES.find(x => x.id === sr.purpose); if (!p) return;
+  S.purpose = p; $("#pval").textContent = p.title; $("#pic").textContent = p.icon; endTour(false);
+  startRun(p);
+  S.run.name = sr.name; S.run.saved = sr.name;
+  const f = freshF(); Object.assign(f, sr.f); f.assets = new Set(sr.f.assets || []); f.know = new Set(sr.f.know || []);
+  S.f = f;
+  setRadius(sr.ground?.radius || null);
+  syncFilterUI(); applyNow();
+  const steps = S.run.steps;
+  const through = Math.min(sr.through ?? 0, steps.length - 1);
+  for (let i = 0; i <= through; i++){
+    const s = steps[i]; s.status = "done";
+    if (s.spec.kind === "ground"){ s.n = groundCount(); }
+    else if (s.spec.kind === "measure"){ s.note = "measured"; }
+    else s.n = S.filtered.length;
+  }
+  S.run.i = Math.min(through + 1, steps.length - 1);
+  const st = cur(); st.status = "cur"; st.snap = snapshot();
+  if (S.radius) map.fitBounds(radiusCircle.getBounds(), { padding:[30,30], animate:false });
+  renderRun();
+  flash(`${fmt(S.filtered.length)} match “${sr.name}” today`);
+}
+
+/* --- hand a run to the Mac --- */
+function handoffHTML(h){
+  if (h.state === "sending") return `<div class="state"><span class="spin"></span>Handing it over…</div>`;
+  if (h.state === "mailed") return `<div class="state ok"><b>An email to yourself is open with this run in it.</b> Send it. Fox picks it up within the hour, checks each owner, and texts you when the call sheet is in your folder.${h.left ? ` ${h.left} listed with another broker were left out.` : ""}<br><button class="altlink" data-do="copyrun">Copy the run instead</button></div>`;
+  if (h.state === "copied") return `<div class="state ok">Copied. Paste it into an email to ${FOX_EMAIL} with the subject “Fox Atlas run”, and Fox picks it up within the hour.</div>`;
+  if (h.state === "queued" || h.state === "running") return `<div class="state"><span class="spin"></span>${esc(h.step || "Checking")}${h.total ? ` · ${h.done||0} of ${h.total}` : ""}. Who is behind each entity, and whether anyone already lists it.</div>`;
+  if (h.state === "done"){
+    const ow = (h.owners || []).map(o => `<div><span>${esc(o.human || o.owner)}</span><span class="st ${o.status==="PURSUE"?"clear":o.status==="LISTED-INTRO"?"listed":"hold"}">${esc(o.status_plain || o.status)}</span></div>`).join("");
+    return `<div class="state ok"><b>Checked.</b> ${esc(h.summary || "")}${h.left ? ` ${h.left} listed with another broker were left out before the check.` : ""}${h.files?.pdf ? `<br>The call sheet is in today's folder on the Desktop.` : ""}<div class="owners">${ow}</div></div>`;
+  }
+  if (h.state === "failed") return `<div class="state bad">It did not finish: ${esc(h.error || "unknown")}. The list is still here; try again or hand it over from the Mac.</div>`;
+  if (h.state === "nomac") return `<div class="state">This copy of the map is not on your Mac, so it cannot hand the run over. It is saved here under “${esc(h.name)}”; open the map on the Mac and press this again.</div>`;
+  return "";
+}
+function runPayload(rows){
+  // Listed properties never ride along: another broker holds them (Article 16). They stay on his
+  // sheet marked, and the run carries only what Fox may check for outreach.
+  const clean = rows.filter(r => !(r[C.FLAGS] & F.LISTED));
+  return { payload: {
+    v:1, purpose:S.purpose.id, purpose_title:S.purpose.title, name:S.run.name,
+    ground:{ radius:S.radius, county:S.f.county }, filters:serializeF(),
+    steps:S.run.steps.map(s => ({ title:s.spec.title, n:s.n, note:s.note })),
+    kept:clean.map(r => r[C.PID]), rows:toObjects(clean), created:new Date().toISOString(),
+    left_out:rows.length - clean.length,
+  }, left: rows.length - clean.length };
+}
+function compactRun(p){
+  // The short form that fits in an email. A short kept list travels as itself; a long one travels
+  // as the filters plus what he dropped, and the Mac rebuilds the list from its own copy of the data.
+  const base = { v:1, purpose:p.purpose, name:p.name, ground:p.ground, filters:p.filters, created:p.created, left_out:p.left_out };
+  if (p.kept.length <= 60) return JSON.stringify({ ...base, kept:p.kept });
+  const keptSet = new Set(p.kept);
+  const dropped = (S.list?.items || []).filter(i => !i.kept).map(i => i.r[C.PID]);
+  return JSON.stringify({ ...base, dropped, listcap:500 });
+}
+async function handoff(rows){
+  if (!S.run.saved){ const nm = ($("#runname")?.value || "").trim() || `${S.purpose.title} ${stamp()}`; if ($("#runname")) $("#runname").value = nm; saveCurrentRun(); }
+  const { payload, left } = runPayload(rows);
+  if (!payload.kept.length){ flash("Everything kept is listed with another broker"); return; }
+  if (!S.mac){
+    // Off the Mac: the run goes to Fox as an email Andrew sends himself; the hourly pickup reads it.
+    S.run.lastPayload = payload;
+    const body = "Fox Atlas run below. Send this as it is.\n\n" + compactRun(payload);
+    const href = `mailto:${FOX_EMAIL}?subject=${encodeURIComponent("Fox Atlas run: " + (payload.name || payload.purpose_title))}&body=${encodeURIComponent(body)}`;
+    S.run.handoff = { state:"mailed", left }; renderRun();
+    window.location.href = href;
+    return;
+  }
+  S.run.handoff = { state:"sending", left }; renderRun();
+  let res;
+  try { res = await fetch("/api/run", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload) }); }
+  catch(e){ res = null; }
+  if (!res || !res.ok){ S.run.handoff = { state:"nomac", name:S.run.name }; renderRun(); return; }
+  const j = await res.json();
+  S.run.handoff = { state:"queued", id:j.id, left }; renderRun();
+  pollRun(j.id);
+}
+/* ---- runs Fox already checked (baked in at build time) ---- */
+let RUNS_DONE = [];
+fetch(DATA_BASE + "runs.json").then(r => r.ok ? r.json() : []).then(j => { RUNS_DONE = Array.isArray(j) ? j : []; }).catch(() => {});
+function renderRunsDone(){
+  const el = $("#runsdone"); if (!el) return;
+  const list = RUNS_DONE.filter(r => r.state === "done").slice(0, 5);
+  if (!list.length){ el.innerHTML = ""; return; }
+  el.innerHTML = `<h3>Runs Fox has checked</h3>` + list.map(r => `<div class="rn"><b>${esc(r.name || r.purpose)}</b><span class="st">${esc(r.summary || "")}</span></div>`).join("");
+}
+async function pollRun(id){
+  for (let i = 0; i < 400; i++){
+    await new Promise(r => setTimeout(r, 2500));
+    if (!S.run?.handoff || S.run.handoff.id !== id) return;
+    let st = null;
+    try { st = await (await fetch(`/api/runs/${id}`)).json(); } catch(e){}
+    if (!st) continue;
+    S.run.handoff = { ...st, id };
+    const el = $("#handoffstate"); if (el) el.innerHTML = handoffHTML(S.run.handoff);
+    if (st.state === "done" || st.state === "failed") return;
+  }
+}
+
+/* ---------------- the walkthrough ---------------- */
+const CASTLE_ROCK = [39.3722, -104.8561];
+const TOUR = [
+  { k:"How this works", p:"Every visit starts with why you opened the map. This one chases listings. I will do each step; you watch the number." },
+  { k:"Step 1", p:"First, the ground. I will drop a five-mile circle on Castle Rock. On your own you tap the button, or tap the map." },
+  { k:"Step 2", p:"Now the play: retail, owner occupied, held fifteen years, never spoken to. Watch it narrow." },
+  { k:"Step 3", p:"Cull with the arrow keys and the space bar, or tap Drop on a row. Drop a couple so you feel it, then press Done." },
+  { k:"That is the whole play", p:"Build the sheet, or hand it to Fox to check who is behind each entity and whether anyone already lists it. Nothing goes out without your yes. Name it and it is one tap next month." },
+];
+function startTour(){
+  const p = PURPOSES.find(x => x.id === "listings");
+  S.purpose = p; $("#pval").textContent = p.title; $("#pic").textContent = p.icon;
+  startRun(p);
+  S.tour = { i:0 };
+  map.setView(CASTLE_ROCK, 12, { animate:!REDUCED });
+  renderCoach();
+}
+function renderCoach(){
+  if (!S.tour) return;
+  const t = TOUR[S.tour.i];
+  $("#coachk").textContent = t.k; $("#coachp").textContent = t.p;
+  const st = cur();
+  $("#coachgo").textContent = S.tour.i === 0 ? "Start" : S.tour.i === TOUR.length-1 ? "Done" : (st?.spec.kind === "cull" ? "I've culled, next" : "Do it");
+  $("#coach").classList.add("show");
+}
+function tourStep(){ if (!S.tour) return; S.tour.i = Math.min(TOUR.length-1, S.run.i + 1); renderCoach(); }
+$("#coachgo").onclick = () => {
+  if (!S.tour) return;
+  const st = cur(); const kind = st?.spec.kind;
+  if (S.tour.i === 0){ S.tour.i = 1; renderCoach(); return; }
+  if (S.tour.i === TOUR.length-1){ endTour(true); return; }
+  if (kind === "ground"){ st.vals.miles = 5; dropCircle(CASTLE_ROCK[0], CASTLE_ROCK[1], 5*MILE); }
+  else if (kind === "narrow") doNarrow();
+  else if (kind === "cull"){ if (!S.list){ makeList(); renderRun(); if (PHONE()) openSide(false); $("#coachgo").textContent = "I've culled, next"; return; } const k = kept().length || S.list.items.length; if (!kept().length) S.list.items.forEach(i => i.kept = true); $("#list").classList.remove("show"); completeStep(k); }
+};
+$("#coachskip").onclick = () => endTour(true);
+function endTour(mark){
+  if (mark) try { localStorage.setItem("pm.tour.seen", "1"); } catch(e){}
+  S.tour = null; $("#coach").classList.remove("show");
+}
+
+/* ---------------- mobile ---------------- */
+function openSide(open){ $("#side").classList.toggle("open", !!open); $("#tabrun").setAttribute("aria-pressed", open ? "true" : "false"); $("#tabmap").setAttribute("aria-pressed", open ? "false" : "true"); }
+function renderPeek(){
+  const st = cur(), a = S.acct ? acctById(S.acct) : null;
+  $("#peekk").textContent = a ? a.side : S.run ? `Step ${S.run.i+1} of ${S.run.steps.length} · ${S.run.p.title}` : "Fox Atlas";
+  $("#peekv").textContent = a ? a.title : st ? st.spec.title : "Your deals";
+  $("#peekn").textContent = a ? `${(a.sites||[]).filter(liveSite).length} in play · ${(a.sites||[]).length} on file` : S.portfolio != null ? `Everything ${S.portfolio} holds` : (S.filtered.length ? `${fmt(S.filtered.length)} on the map` : "");
+}
+$("#peek").onclick = () => openSide(!$("#side").classList.contains("open"));
+$("#tabrun").onclick = () => { $("#list").classList.remove("show"); openSide(true); };
+$("#tabmap").onclick = () => { openSide(false); $("#list").classList.remove("show"); };
+$("#tablist").onclick = () => { openSide(false); if (!S.list) makeList(); else renderList(); $("#list").classList.add("show"); ["tabrun","tabmap"].forEach(id => $("#"+id).setAttribute("aria-pressed","false")); $("#tablist").setAttribute("aria-pressed","true"); };
+
+/* ---------------- basemap toggle: a visible button now, and the b key still works ---------------- */
+function toggleBase(){
+  map.removeLayer(basemap === "streets" ? streets : imagery);
+  basemap = basemap === "streets" ? "imagery" : "streets";
+  (basemap === "streets" ? streets : imagery).addTo(map);
+  const b = $("#btnbase"); if (b){ b.textContent = basemap === "streets" ? "◈ Aerial" : "◈ Map"; b.setAttribute("aria-pressed", basemap === "imagery" ? "true" : "false"); }
+  flash(basemap === "streets" ? "Street map" : "Aerial");
+}
+$("#btnbase").onclick = toggleBase;
+document.addEventListener("keydown", e => {
+  if (e.key === "b" && !e.target.matches("input,textarea,select")) toggleBase();
+});
+
+boot();
+</script>
+</body>
+</html>
